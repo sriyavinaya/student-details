@@ -1,93 +1,75 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowUpDown } from "lucide-react";
+import axios from 'axios';
 
-const dummyEvents = [
-  {
-    id: '1',
-    name: 'CodeFest 2023',
-    date: '12/05/2023',
-    host: 'Tech University',
-    category: 'Hackathon',
-    achievement: 'First Place',
-    status: 'Completed'
-  },
-  {
-    id: '2',
-    name: 'Web Development Workshop',
-    date: '23/06/2023',
-    host: 'Computer Science Dept',
-    category: 'Workshop',
-    status: 'Completed',
-    achievement: 'Participation'
-  },
-  {
-    id: '3',
-    name: 'AI Challenge',
-    date: '10/08/2023',
-    host: 'DataScience Institute',
-    category: 'Competitions',
-    status: 'Completed',
-    achievement: 'Second Place'
-  },
-];
+const TechnicalEventsTable = () => {
+  const [events, setEvents] = useState([]);
+  const [sortField, setSortField] = useState(""); 
+  const [sortDirection, setSortDirection] = useState("asc"); 
 
-const TechnicalEventsTable = ({ 
-  searchTerm = "", 
-  filterCategory = "",
-  sortField = "",
-  sortDirection = "asc",
-  onSort
-}) => {
-  // Filter events based on search term and category
-  const filteredEvents = dummyEvents.filter(event => {
-    const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          event.host.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory ? event.category === filterCategory : true;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Sort events based on sort field and direction
-  const sortedEvents = [...filteredEvents].sort((a, b) => {
-    if (!sortField) return 0;
-    
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-    
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/technical/all', {
+          withCredentials: true,
+        });
+        setEvents(response.data);
+      } catch (error) {
+        console.error("Failed to fetch events", error);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   const handleSortClick = (field) => {
-    if (onSort) {
-      onSort(field);
+    if (sortField === field) {
+      // Toggle sort direction if the same field is clicked again
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // Set new sort field and reset to ascending order
+      setSortField(field);
+      setSortDirection("asc");
     }
   };
 
-  const SortableHeader = ({ field, label }) => (
-    <TableHead 
-      className="font-medium cursor-pointer"
-      onClick={() => handleSortClick(field)}
-    >
-      <div className="flex items-center gap-1">
-        {label}
-        <ArrowUpDown size={14} className="opacity-50" />
-      </div>
-    </TableHead>
-  );
+  // Sorting logic
+  const sortedEvents = [...events].sort((a, b) => {
+    if (!sortField) return 0;
+    
+    const valueA = a[sortField] || "";
+    const valueB = b[sortField] || "";
+
+    if (typeof valueA === "string") {
+      return sortDirection === "asc" ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+    } else {
+      return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
+    }
+  });
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-100">
-            <SortableHeader field="name" label="Event Name" />
-            <SortableHeader field="date" label="Date" />
-            <SortableHeader field="host" label="Host" />
-            <SortableHeader field="category" label="Category" />
-            <SortableHeader field="achievement" label="Achievement" />
-            <SortableHeader field="status" label="Status" />
+            <TableHead className="cursor-pointer" onClick={() => handleSortClick("name")}>
+              Event Name <ArrowUpDown size={14} className="opacity-50" />
+            </TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSortClick("date")}>
+              Date <ArrowUpDown size={14} className="opacity-50" />
+            </TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSortClick("host")}>
+              Host <ArrowUpDown size={14} className="opacity-50" />
+            </TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSortClick("category")}>
+              Category <ArrowUpDown size={14} className="opacity-50" />
+            </TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSortClick("achievement")}>
+              Achievement <ArrowUpDown size={14} className="opacity-50" />
+            </TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSortClick("status")}>
+              Status <ArrowUpDown size={14} className="opacity-50" />
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -98,8 +80,20 @@ const TechnicalEventsTable = ({
                 <TableCell>{event.date}</TableCell>
                 <TableCell>{event.host}</TableCell>
                 <TableCell>{event.category}</TableCell>
-                <TableCell>{event.achievement}</TableCell>
-                <TableCell>{event.status}</TableCell>
+                <TableCell>{event.achievement || "N/A"}</TableCell>
+                <TableCell>
+                <span
+                  className={`text-sm font-semibold ${
+                    event.status === "Pending"
+                      ? "text-yellow-500" // Dark yellow text
+                      : event.status === "Approved"
+                      ? "text-green-600" // Green text
+                      : "text-red-600" // Red text
+                  }`}
+                >
+                  {event.status}
+                </span>
+              </TableCell>
               </TableRow>
             ))
           ) : (
@@ -116,3 +110,19 @@ const TechnicalEventsTable = ({
 };
 
 export default TechnicalEventsTable;
+
+
+
+// <TableCell>
+//                   <span
+//                     className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+//                       event.status === "Pending"
+//                         ? "bg-yellow-500 text-white"
+//                         : event.status === "Approved"
+//                         ? "bg-green-500 text-white"
+//                         : "bg-red-500 text-white"
+//                     }`}
+//                   >
+//                     {event.status}
+//                   </span>
+//                 </TableCell>

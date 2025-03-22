@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 
-const History = () => {
+const Export = () => {
   const [exportFormat, setExportFormat] = useState("csv");
   const [selectedFields, setSelectedFields] = useState([
     "name",
@@ -62,7 +62,7 @@ const History = () => {
   
   return (
     <div>
-      <DashboardHeader title="Export Your Records" />
+      <DashboardHeader title="Export Records" />
       
       <div className="mb-6 grid gap-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
@@ -119,19 +119,19 @@ const History = () => {
           </p>
           <Button onClick={handleExport} className="bg-blue-600 hover:bg-blue-700">
             <FileDown className="mr-2 h-4 w-4" />
-            Export My Records
+            Export Records
           </Button>
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-medium mb-4">Export History</h2>
+      {/* <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-medium mb-4">Export Export</h2>
         <div className="text-center py-8 text-gray-500">
           <p>You haven't exported any records yet.</p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
 
-export default History;
+export default Export;

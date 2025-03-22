@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -56,20 +57,11 @@ public ResponseEntity<String> submitTechnicalEvent(
     }
 }
 
-
-    // @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    // public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-    //     try {
-    //         if (file.isEmpty()) {
-    //             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
-    //         }
-    //         String filePath = technicalEventService.saveFile(file);
-    //         return ResponseEntity.ok(filePath);
-    //     } catch (IOException e) {
-    //         logger.error("Error uploading file: ", e);
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file");
-    //     }
-    // }
+@GetMapping("/all")
+public ResponseEntity<List<TechnicalEvent>> getAllEvents() {
+    List<TechnicalEvent> events = technicalEventService.getAllEvents();
+    return new ResponseEntity<>(events, HttpStatus.OK);
+}
 
 
     // @GetMapping("/hello") // Endpoint: http://localhost:8080/api/hello
@@ -102,6 +94,19 @@ public ResponseEntity<String> submitTechnicalEvent(
 
 
 
+    // @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    //     try {
+    //         if (file.isEmpty()) {
+    //             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
+    //         }
+    //         String filePath = technicalEventService.saveFile(file);
+    //         return ResponseEntity.ok(filePath);
+    //     } catch (IOException e) {
+    //         logger.error("Error uploading file: ", e);
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file");
+    //     }
+    // }
 
 
 

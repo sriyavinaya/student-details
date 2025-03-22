@@ -1,118 +1,114 @@
-// import React, { useState } from "react";
-// import axios from "axios";
 // import nitc from "../assets/nitc.png";
 // import { useNavigate } from "react-router-dom";
 // import { toast } from "sonner";
+// import { useAuth } from "@/contexts/AuthContext";
 // import { Button } from "@/components/ui/button";
+// import { useEffect, useState } from "react"; // ✅ Fix: Import useEffect
+// import axios from "axios";
+
+// const handleGoogleLogin = () => {
+//   window.location.href = "http://localhost:8080/oauth2/authorization/google"; // ✅ Redirect to Google
+// };
+
 
 // const LoginPage = () => {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [selectedRole, setSelectedRole] = useState(null);
-//   const [showDropdown, setShowDropdown] = useState(false);
 //   const navigate = useNavigate();
+//   const { login } = useAuth();
+//   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-//     if (!email.endsWith("@nitc.ac.in")) {
-//       toast.error("Only NITC Emails are allowed!");
-//       return;
-//     }
-//     try {
-//       const response = await axios.post("http://localhost:8080/api/auth/login", {
-//         email,
-//         password,
-//       });
 
-//       if (response.data.token) {
-//         localStorage.setItem("token", response.data.token);
-//         const role = response.data.role;
-//         if (role === "STUDENT") {
-//           navigate("/dashboard");
-//         } else if (role === "FACULTY") {
-//           navigate("/faculty");
-//         } else if (role === "ADMIN") {
-//           navigate("/admin");
+
+//   // ✅ Fetch user details after Google login redirect
+//   useEffect(() => {
+//     const fetchUserDetails = async () => {
+//       try {
+//         // ✅ Extract email from URL parameters (if redirected)
+//         const urlParams = new URLSearchParams(window.location.search);
+//         const emailFromUrl = urlParams.get("email");
+
+//         let email = localStorage.getItem("email");
+
+//         if (!email && emailFromUrl) {
+//           localStorage.setItem("email", emailFromUrl);
+//           email = emailFromUrl;
 //         }
-//       } else {
-//         toast.error(response.data.message);
-//       }
-//     } catch (error) {
-//       toast.error("Invalid Credentials");
-//     }
-//   };
 
-//   const handleGoogleLogin = () => {
-//     window.location.href = "http://localhost:8080/oauth2/authorization/google";
-//   };
+//         if (!email) {
+//           console.error("No email found in localStorage or URL");
+//           return;
+//         }
+
+//         // ✅ Send email to backend for verification
+//         const response = await axios.post(
+//           "http://localhost:8080/api/auth/google-login",
+//           { email },
+//           { withCredentials: true }
+//         );
+
+//         if (response.status !== 200) {
+//           throw new Error("Authentication failed");
+//         }
+
+//         const { role, token } = response.data;
+//         if (!role || !token) {
+//           toast.error("Login failed: Missing data from server.");
+//           return;
+//         }
+
+//         // ✅ Store user data
+//         localStorage.setItem("token", token);
+//         localStorage.setItem("email", email);
+//         localStorage.setItem("role", role);
+//         login(email, role, token);
+
+//         toast.success(`Welcome ${role}!`);
+
+//         // ✅ Redirect user based on role
+//         if (role === "STUDENT") navigate("/dashboard");
+//         else if (role === "FACULTY") navigate("/faculty");
+//         else if (role === "ADMIN") navigate("/admin");
+
+//       } catch (error) {
+//         console.error("Login Error:", error);
+//         toast.error("Google authentication failed. Try again.");
+//       }
+//     };
+
+//     fetchUserDetails();
+//   }, []);
+  
 
 //   return (
 //     <div className="flex flex-col min-h-screen bg-[#D5E2ED]">
-//       {/* Header */}
 //       <header className="bg-[#d9d9d9] py-4 px-6 shadow-sm">
 //         <h1 className="text-2xl font-bold text-gray-800">Student Details</h1>
 //       </header>
 
-//       {/* Main Content */}
 //       <main className="flex-1 flex items-center justify-center p-8">
 //         <div className="flex w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in">
-//           {/* Image Side */}
-//           <div className="hidden md:block w-1/2 relative">
-//             <img src={nitc} alt="NIT Calicut Campus" className="w-full h-full object-cover" />
+//           <div className="hidden md:block w-1/2">
+//             <img src={nitc} alt="NIT Calicut Campus" className="w-full h-full object-cover"/>
 //           </div>
-
-//           {/* Login Side */}
+          
 //           <div className="w-full md:w-1/2 p-8 md:p-12">
-//             <div className="max-w-md mx-auto space-y-8">
-//               <div className="text-center mb-8">
-//                 <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-//                 <p className="text-gray-600">Please sign in to continue</p>
-//               </div>
-
-//               {/* Role Selection Dropdown */}
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700 mb-1">Select Role</label>
-//                 <div className="relative">
-//                   <button
-//                     type="button"
-//                     className="w-full px-4 py-3 border border-gray-300 rounded-lg flex justify-between items-center bg-white hover:border-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-200"
-//                     onClick={() => setShowDropdown(!showDropdown)}
-//                   >
-//                     <span className={selectedRole ? "text-gray-800" : "text-gray-500"}>
-//                       {selectedRole || "Select role..."}
-//                     </span>
-//                     <span className="text-blue-500">▼</span>
-//                   </button>
-
-//                   {showDropdown && (
-//                     <div className="absolute w-full mt-1 border border-gray-300 bg-white rounded-lg shadow-lg z-10 animate-slide-in">
-//                       {["Student", "Faculty", "Admin"].map((role) => (
-//                         <div
-//                           key={role}
-//                           className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
-//                           onClick={() => {
-//                             setSelectedRole(role);
-//                             setShowDropdown(false);
-//                           }}
-//                         >
-//                           {role}
-//                         </div>
-//                       ))}
-//                     </div>
-//                   )}
-//                 </div>
-//               </div>
-
-//               {/* Google Sign In Button */}
+//             <div className="max-w-md mx-auto space-y-8 text-center">
+//               <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
+//               <p className="text-gray-600">Sign in with your NITC email</p>
+              
 //               <Button
-//                 className="w-full py-6 bg-[#D5E2ED] hover:bg-[#c4d3e0] text-gray-800 font-medium rounded-lg transition-colors"
+//                 className="w-full py-6 bg-[#D5E2ED] hover:bg-[#c4d3e0] text-gray-800 font-medium rounded-lg flex items-center justify-center space-x-2"
 //                 onClick={handleGoogleLogin}
+//                 disabled={isLoggingIn}
 //               >
-//                 <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 mr-2" />
-//                 Sign in with Google
+//                 <img 
+//                   src="https://www.google.com/favicon.ico" 
+//                   alt="Google" 
+//                   className="w-5 h-5" 
+//                 />
+//                 <span>{isLoggingIn ? "Signing in..." : "Sign in with Google"}</span>
 //               </Button>
 
-//               <p className="text-center text-sm text-gray-600 mt-8">
+//               <p className="text-sm text-gray-600 mt-8">
 //                 By continuing, you agree to our Terms of Service and Privacy Policy.
 //               </p>
 //             </div>
@@ -120,7 +116,6 @@
 //         </div>
 //       </main>
 
-//       {/* Footer */}
 //       <footer className="bg-[#d9d9d9] py-4 px-6 text-center text-gray-600 shadow-inner">
 //         <p>© {new Date().getFullYear()} Student Details. All rights reserved.</p>
 //       </footer>
@@ -129,6 +124,9 @@
 // };
 
 // export default LoginPage;
+
+
+
 
 import { useState } from 'react';
 import nitc from '../assets/nitc.png';

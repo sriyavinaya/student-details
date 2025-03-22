@@ -10,31 +10,39 @@ const TopHeader = () => {
 
   const handleLogout = async () => {
     try {
-      // Send a request to the backend API for logout
-      const response = await fetch("http://localhost:8080/api/logout", {
-        method: "POST", // Use POST or GET based on your backend implementation
-        credentials: "include", // Include cookies if session-based authentication is used
+      const response = await fetch("http://localhost:8080/api/auth/logout", {
+        method: "POST",
+        credentials: "include", // Ensure cookies/session are included
       });
-
-      if (response.ok) {
-        // Call the frontend logout logic
-        logout();
-        toast({
-          title: "Logged out successfully",
-          description: "You have been logged out of your account",
-        });
-      } else {
-        throw new Error("Failed to log out from the server");
+  
+      if (!response.ok) {
+        throw new Error("Logout failed");
       }
+  
+      // Remove authentication token from local storage (if using JWT)
+      localStorage.removeItem("authToken");
+  
+      // Call logout function from context (if using AuthContext)
+      logout();
+  
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out.",
+      });
+  
+      // Redirect to login page
+      window.location.href = "/login";
+  
     } catch (error) {
       console.error("Logout error:", error);
       toast({
         title: "Logout failed",
-        description: "An error occurred while logging out. Please try again.",
+        description: "Please try again.",
         variant: "destructive",
       });
     }
   };
+  
 
   const handleNotification = () => {
     setNotifications(0);

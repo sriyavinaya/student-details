@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { 
-  LayoutDashboard, 
   Users, 
+  User,
   Flag, 
   Edit, 
   FileInput,
   ChevronLeft,
   ChevronRight,
-  FileDown
+  FileDown,
+  Home
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const SidebarItem = ({ to, icon, label, isCollapsed }) => {
     <li>
       <NavLink 
         to={to} 
+        end
         className={({ isActive }) => 
           `sidebar-menu-item ${isActive ? 'active' : ''}`
         }
@@ -38,9 +40,9 @@ const AdminSidebar = () => {
   };
   
   const sidebarItems = [
-    { to: "/admin", icon: <LayoutDashboard size={18} />, label: "Dashboard", id: "dashboard" },
+    { to: "/admin", icon: <Home size={18} />, label: "Dashboard", id: "dashboard" },
     { to: "/admin/student-profiles", icon: <Users size={18} />, label: "Student Profiles", id: "student-profiles" },
-    { to: "/admin/faculty-profiles", icon: <Users size={18} />, label: "Faculty Profiles", id: "faculty-profiles" },
+    { to: "/admin/faculty-profiles", icon: <User size={18} />, label: "Faculty Profiles", id: "faculty-profiles" },
     { to: "/admin/flagged-records", icon: <Flag size={18} />, label: "Flagged Records", id: "flagged-records" },
     { to: "/admin/edit-fields", icon: <Edit size={18} />, label: "Edit Fields", id: "edit-fields" },
     { to: "/admin/import-details", icon: <FileInput size={18} />, label: "Import Details", id: "import-details" },

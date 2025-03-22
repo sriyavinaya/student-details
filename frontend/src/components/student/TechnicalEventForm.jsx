@@ -76,101 +76,70 @@ const TechnicalEventForm = ({ event, onClose, onSave }) => {
         }
     };
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     setIsSubmitting(true);
-
-    //     const requiredFields = ['name', 'host', 'category', 'date', 'description'];
-    //     const missingFields = requiredFields.filter((field) => !formData[field]);
-
-    //     if (missingFields.length > 0) {
-    //         toast({
-    //             title: 'Missing Fields',
-    //             description: 'Please fill in all required fields',
-    //             variant: 'destructive',
-    //         });
-    //         setIsSubmitting(false);
-    //         return;
-    //     }
-
-    //     try {
-    //         let proofDocumentLink = await uploadProofDocument();
-
-    //         const formDataToSend = new FormData();
-    //         formDataToSend.append('id', formData.id || '0'); // Ensure ID is sent
-    //         formDataToSend.append('name', formData.name);
-    //         formDataToSend.append('date', formData.date);
-    //         formDataToSend.append('host', formData.host);
-    //         formDataToSend.append('category', formData.category);
-    //         formDataToSend.append('achievement', formData.achievement);
-    //         formDataToSend.append('description', formData.description);
-    //         formDataToSend.append('status', formData.status);
-    //         if (formData.proofDocument) {
-    //             formDataToSend.append('proofDocument', formData.proofDocument); // File field
-    //         }
-
-    //         const response = await axios.post(
-    //             'http://localhost:8080/api/technical/submit',
-    //             formDataToSend,
-    //             {
-    //                 withCredentials: true, // Include credentials (cookies)
-    //                 headers: {
-    //                     'Content-Type': 'multipart/form-data', // Set content type
-    //                 },
-    //             }
-    //         );
-
-    //         if (response.status !== 200) throw new Error('Submission failed');
-
-    //         toast({
-    //             title: 'Success',
-    //             description: 'Event details saved successfully.',
-    //         });
-
-    //         onSave(formData);
-    //         resetForm();
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         toast({
-    //             title: 'Submission Failed',
-    //             description: error.message || 'Could not save event details.',
-    //             variant: 'destructive',
-    //         });
-    //     } finally {
-    //         setIsSubmitting(false);
-    //     }
-    // };
-
     const handleSubmit = async (e) => {
-      e.preventDefault();
-      setIsSubmitting(true);
-  
-      try {
-          // Test API first
-          const response = await fetch("http://localhost:8080/api/technical/hello");
-          if (!response.ok) {
-              throw new Error("Network response was not ok");
-          }
-          const data = await response.text(); // Read response as text
-          console.log("Test Response:", data); // Should log: "Hello, World!"
-  
-          toast({
-              title: 'API Test Successful',
-              description: data,
-              variant: 'success',
-          });
-  
-      } catch (error) {
-          console.error("Error testing API:", error);
-          toast({
-              title: 'API Test Failed',
-              description: 'Could not reach the backend',
-              variant: 'destructive',
-          });
-      }
-  
-      setIsSubmitting(false);
-  };
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        const requiredFields = ['name', 'host', 'category', 'date', 'description'];
+        const missingFields = requiredFields.filter((field) => !formData[field]);
+
+        if (missingFields.length > 0) {
+            toast({
+                title: 'Missing Fields',
+                description: 'Please fill in all required fields',
+                variant: 'destructive',
+            });
+            setIsSubmitting(false);
+            return;
+        }
+
+        try {
+            let proofDocumentLink = await uploadProofDocument();
+
+            const formDataToSend = new FormData();
+            formDataToSend.append('id', formData.id || '0'); // Ensure ID is sent
+            formDataToSend.append('name', formData.name);
+            formDataToSend.append('date', formData.date);
+            formDataToSend.append('host', formData.host);
+            formDataToSend.append('category', formData.category);
+            formDataToSend.append('achievement', formData.achievement);
+            formDataToSend.append('description', formData.description);
+            formDataToSend.append('status', formData.status);
+            if (formData.proofDocument) {
+                formDataToSend.append('proofDocument', formData.proofDocument); // File field
+            }
+
+            const response = await axios.post(
+                'http://localhost:8080/api/technical/submit',
+                formDataToSend,
+                {
+                    withCredentials: true, // Include credentials (cookies)
+                    headers: {
+                        'Content-Type': 'multipart/form-data', // Set content type
+                    },
+                }
+            );
+
+            if (response.status !== 200) throw new Error('Submission failed');
+
+            toast({
+                title: 'Success',
+                description: 'Event details saved successfully.',
+            });
+
+            onSave(formData);
+            resetForm();
+        } catch (error) {
+            console.error('Error:', error);
+            toast({
+                title: 'Submission Failed',
+                description: error.message || 'Could not save event details.',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
   
 
@@ -253,6 +222,19 @@ const TechnicalEventForm = ({ event, onClose, onSave }) => {
                             type="date"
                             name="date"
                             value={formData.date}
+                            onChange={handleChange}
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                        />
+                    </label>
+
+                    <label className="block">
+                        <span className="text-gray-700">
+                            <span className="text-red-500">*</span> Achievement
+                        </span>
+                            <input
+                            type="text"
+                            name="achievement"
+                            value={formData.achievement}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                         />

@@ -15,6 +15,7 @@ const SidebarItem = ({ to, icon, label, isCollapsed }) => {
     <li>
       <NavLink 
         to={to} 
+        end
         className={({ isActive }) => 
           `sidebar-menu-item ${isActive ? 'active' : ''}`
         }

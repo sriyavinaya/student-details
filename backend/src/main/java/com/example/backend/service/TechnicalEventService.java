@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -19,6 +20,10 @@ public class TechnicalEventService {
 
     @Autowired
     private TechnicalEventRepository technicalEventRepository;
+
+    public List<TechnicalEvent> getAllEvents() {
+        return technicalEventRepository.findAll();
+    }
 
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/TechnicalEvents/";
 

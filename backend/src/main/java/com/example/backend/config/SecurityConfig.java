@@ -1,14 +1,100 @@
+// package com.example.backend.config;
+
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+// import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+// import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+// import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+// import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+// import org.springframework.security.web.SecurityFilterChain;
+
+// @Configuration
+// public class SecurityConfig {
+
+//     @Bean
+//     public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+//         http
+//             .csrf(csrf -> csrf.disable()) // ✅ Disable CSRF for REST API
+//             .authorizeHttpRequests(auth -> auth
+//                 .requestMatchers(
+//                     "/api/auth/google-login",
+//                     "/oauth2/**",
+//                     "/login/**",
+//                     "/public/**",
+//                     "/static/**",
+//                     "/v3/api-docs/**", "/swagger-ui/**",
+//                     "/login/oauth2/code/google"
+
+//                 ).permitAll()
+//                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+//                 .requestMatchers("/api/faculty/**").hasAuthority("ROLE_FACULTY")
+//                 .requestMatchers("/api/dashboard/**").hasAuthority("ROLE_STUDENT")
+//                 .requestMatchers("/api/technical/**").hasAnyAuthority("ROLE_STUDENT", "ROLE_FACULTY", "ROLE_ADMIN")
+//                 .requestMatchers("/api/events/**").hasAnyAuthority("ROLE_STUDENT", "ROLE_FACULTY", "ROLE_ADMIN")
+//                 .requestMatchers("/api/files/upload").hasAnyAuthority("ROLE_FACULTY", "ROLE_ADMIN")
+//                 .requestMatchers("/api/users/profile").authenticated()
+//                 .requestMatchers("/api/logout/**").authenticated()
+//                 .anyRequest().authenticated()
+//             )
+//             .oauth2Login(oauth2 -> oauth2
+//             .defaultSuccessUrl("http://localhost:5173/dashboard", true)  // ✅ Redirects to frontend
+//             .failureUrl("http://localhost:5173/login?error")  // ✅ Redirect on failure
+//             .userInfoEndpoint(userInfo -> userInfo.oidcUserService(new OidcUserService()))
+//         );
+
+//         return http.build();
+//     }
+
+//     // ✅ Fix: Define `OidcUserService` as a separate bean
+//     @Bean
+//     public OidcUserService oidcUserService() {
+//         OidcUserService delegate = new OidcUserService();
+        
+//         return new OidcUserService() {
+//             @Override
+//             public OidcUser loadUser(org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+//                 OidcUser oidcUser = delegate.loadUser(userRequest);
+//                 String email = oidcUser.getAttribute("email");
+
+//                 // if (email == null || !email.endsWith("@nitc.ac.in")) {
+//                 //     throw new OAuth2AuthenticationException("Only NITC emails are allowed");
+//                 // }
+
+//                 return oidcUser;
+//             }
+//         };
+//     }
+
+    // // ✅ Redirect users based on email pattern
+    // private String determineRedirectUrl(String email) {
+    //     if (email.equals("sriya_b221240cs@nitc.ac.in")) {
+    //         return "http://localhost:5173/admin";
+    //     } else if (email.matches(".*[bmp]\\d{6}[a-zA-Z]+@nitc\\.ac\\.in")) {
+    //         return "http://localhost:5173/dashboard";
+    //     } else {
+    //         return "http://localhost:5173/faculty";
+    //     }
+    // }
+// }
+
+
+
+
+
+
+
 package com.example.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+// import java.util.List;
+
 @Configuration
-@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
@@ -19,180 +105,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-               // Removed successHandler
-                .authorizeHttpRequests(auth -> auth
+            .csrf(csrf -> csrf.disable()) // Disable CSRF for REST API
+            .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/**",        // Authentication (Google OAuth, Login, Logout)
-                    "/api/dashboard/**",    // Student operations
-                    "/api/faculty/**",     // Faculty operations
-                    "/api/admin/**",       // Admin operations
-                    "/api/technical/upload",   // Technical Events (form submission, proof upload, etc.)
-                    "/api/technical/submit",   // Technical Events (form submission, proof upload, etc.)
-                    "/api/events/**",      // General event-related APIs
-                    "/api/files/upload",   // File upload (Proof documents, event media, etc.)
-                    "/api/users/profile",  // User profile operations
-                    "/api/notifications/**", // Notifications API
+                    "/api/auth/**", 
+                    "/api/auth/logout",
+                    "/api/dashboard/**",
+                    "/api/faculty/**",
+                    "/api/admin/**",
+                    "/api/technical/**",
+                    "/api/events/**",
+                    "/api/files/upload",
+                    "/api/users/profile",
+                    "/api/notifications/**",
                     "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                    "/api/logout"
-            ).permitAll()
-                        .anyRequest().authenticated())
-                .csrf(csrf -> csrf.disable());
+                    "/api/faculty/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+            );
 
         return http.build();
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// package com.example.backend.config;
-
-// import jakarta.servlet.http.HttpServletRequest;
-// import org.springframework.context.annotation.Bean;
-// import org.springframework.context.annotation.Configuration;
-// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-// import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-// import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-// import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-// import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-// import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-// import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-// import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-// import org.springframework.security.oauth2.core.user.OAuth2User;
-// import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-// import org.springframework.security.web.SecurityFilterChain;
-// import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
-
-// import java.io.IOException;
-// import java.util.Map;
-
-// @Configuration
-// public class SecurityConfig {
-
-//     @Bean
-//     public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
-//         http
-//             .csrf(csrf -> csrf.disable())
-//             .cors(cors -> cors.disable())
-//             .authorizeHttpRequests(auth -> auth
-//             .requestMatchers(
-//                 "/api/auth/**",           
-//                 "/oauth2/**",             
-//                 "/login/**",              
-//                 "/error",                 
-//                 "/public/**",             
-//                 "/static/**",             
-//                 "/api/docs/**",           
-//                 "/swagger-ui/**",         
-//                 "/v3/api-docs/**",
-//                 "/api/technical/**"  // Allow access to technical event pages
-//             ).permitAll()
-            
-//                 .anyRequest().authenticated()
-//             )
-//             .oauth2Login(oauth2 -> oauth2
-//                 .authorizationEndpoint(auth -> 
-//                     auth.authorizationRequestResolver(
-//                         oAuth2AuthorizationRequestResolver(clientRegistrationRepository)
-//                     )
-//                 )
-//                 .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService()))
-//                 .successHandler((request, response, authentication) -> {
-//                     OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-//                     String email = oauth2User.getAttribute("email");
-                    
-//                     String redirectUrl = determineRedirectUrl(email);
-//                     response.sendRedirect(redirectUrl);
-//                 })
-//                 .failureHandler(new SimpleUrlAuthenticationFailureHandler("http://localhost:5173/login?error"))
-//             );
-
-//         return http.build();
-//     }
-
-//     @Bean
-//     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
-//         return userRequest -> {
-//             OAuth2User oauth2User = new DefaultOAuth2UserService().loadUser(userRequest);
-//             String email = oauth2User.getAttribute("email");
-
-//             if (email == null || !email.endsWith("@nitc.ac.in")) {
-//                 throw new OAuth2AuthenticationException("Only NITC emails are allowed");
-//             }
-
-//             return oauth2User;
-//         };
-//     }
-
-//     private String determineRedirectUrl(String email) {
-//         if (email.equals("sriya_b221240cs@nitc.ac.in")) {
-//             return "http://localhost:5173/admin";
-//         }
-//         // Matches bXXXXXX<dept>@nitc.ac.in OR mXXXXXX<dept>@nitc.ac.in (Students)
-//         else if (email.matches(".*[bmp]\\d{6}[a-zA-Z]+@nitc\\.ac\\.in")) {
-//             return "http://localhost:5173/dashboard";
-//         } 
-//         // Faculty (No b/m/p and has only name)
-//         else {
-//             return "http://localhost:5173/faculty";
-//         }
-//     }
-
-//     @Bean
-//     public OAuth2AuthorizationRequestResolver oAuth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
-//         DefaultOAuth2AuthorizationRequestResolver defaultResolver = new DefaultOAuth2AuthorizationRequestResolver(
-//             clientRegistrationRepository, "/oauth2/authorization"
-//         );
-
-//         return new OAuth2AuthorizationRequestResolver() {
-//             @Override
-//             public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-//                 OAuth2AuthorizationRequest authRequest = defaultResolver.resolve(request);
-//                 if (authRequest == null) {
-//                     return null;
-//                 }
-
-//                 return OAuth2AuthorizationRequest.from(authRequest)
-//                     .additionalParameters(params -> params.put("prompt", "select_account"))
-//                     .build();
-//             }
-
-//             @Override
-//             public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-//                 return defaultResolver.resolve(request, clientRegistrationId);
-//             }
-//         };
-//     }
-// }
 

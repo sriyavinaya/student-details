@@ -5,7 +5,7 @@ import TechnicalEventForm from "@/components/student/TechnicalEventForm";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
 
 const Technical = () => {
   const [editingEvent, setEditingEvent] = useState(null);
@@ -14,10 +14,23 @@ const Technical = () => {
   const [filterCategory, setFilterCategory] = useState("");
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [events, setEvents] = useState([]);
   const { toast } = useToast();
 
   const navigate = useNavigate();
 
+  // Function to refresh the table data
+  const refreshTable = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/api/technical/all", {
+        withCredentials: true,
+      });
+      setEvents(response.data); // ✅ Update state with new events
+    } catch (error) {
+      console.error("Failed to fetch events", error);
+    }
+  };
+  
   const handleSave = (updatedEvent) => {
     // In a real app, this would update the backend
     toast({
@@ -26,6 +39,7 @@ const Technical = () => {
     });
     setEditingEvent(null);
     setShowForm(false);
+    refreshTable(); // Refresh the table after saving
   };
 
   const handleClose = () => {
@@ -34,10 +48,8 @@ const Technical = () => {
   };
 
   const handleAddNew = () => {
-    // navigate("/technical/form");
     setShowForm(true);
   };
-  
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -97,6 +109,7 @@ const Technical = () => {
           event={editingEvent || undefined} 
           onClose={handleClose}
           onSave={handleSave}
+          refreshTable={refreshTable} // Pass the refresh function
         />
       )}
       <TechnicalEventsTable 
@@ -111,3 +124,12 @@ const Technical = () => {
 };
 
 export default Technical;
+
+
+
+
+
+
+
+
+

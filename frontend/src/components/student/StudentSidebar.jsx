@@ -10,7 +10,8 @@ import {
   FileText, 
   FileDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  History
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const SidebarItem = ({ to, icon, label, isCollapsed }) => {
     <li>
       <NavLink 
         to={to} 
+        end
         className={({ isActive }) => 
           `sidebar-menu-item ${isActive ? 'active' : ''}`
         }
@@ -47,7 +49,8 @@ const StudentSidebar = () => {
     { to: "/dashboard/clubs", icon: <BookOpen size={18} />, label: "Clubs and Societies", id: "clubs" },
     { to: "/dashboard/internships", icon: <Briefcase size={18} />, label: "Internships and Placements", id: "internships" },
     { to: "/dashboard/publications", icon: <FileText size={18} />, label: "Publications", id: "publications" },
-    { to: "/dashboard/history", icon: <FileDown size={18} />, label: "Export Records", id: "history" },
+    { to: "/dashboard/history", icon: <History size={18} />, label: "Record History", id: "history" },
+    { to: "/dashboard/export", icon: <FileDown size={18} />, label: "Export Records", id: "export" }
   ];
 
   return (

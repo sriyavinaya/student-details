@@ -15,7 +15,8 @@ import Sports from "./pages/student/Sports";
 import Clubs from "./pages/student/Clubs";
 import Internships from "./pages/student/Internships";
 import Publications from "./pages/student/Publications";
-import History from "./pages/student/History";
+import RecordHistory from "./pages/student/RecordHistory";
+import Export from "./pages/student/Export";
 import NotFound from "./pages/NotFound";
 
 // Faculty pages
@@ -50,7 +51,8 @@ const AppRoutes = () => (
       <Route path="clubs" element={<Clubs />} />
       <Route path="internships" element={<Internships />} />
       <Route path="publications" element={<Publications />} />
-      <Route path="history" element={<History />} />
+      <Route path="history" element={<RecordHistory />} />
+      <Route path="export" element={<Export />} />
     </Route>
     
     {/* Faculty routes */}

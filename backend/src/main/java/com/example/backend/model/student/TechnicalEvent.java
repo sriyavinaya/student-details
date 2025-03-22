@@ -1,5 +1,6 @@
 package com.example.backend.model.student;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,6 +20,8 @@ public class TechnicalEvent {
     private String category;      // Event Category
     private String achievement;   // Achievement (optional)
     private String description;   // Event Description
+    
+    @Column(nullable = false)
     private String status;        // Event Status (Pending, Ongoing, Completed)
     private String proofDocumentLink; // Link to the proof document
 

@@ -1,31 +1,17 @@
 package com.example.backend.controller;
 
-import java.io.File;
-// import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
-
-// import org.apache.commons.io.FilenameUtils;
+import com.example.backend.model.student.TechnicalEvent;
+import com.example.backend.service.TechnicalEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.http.MediaType;
-
-import java.nio.file.Files;
-// import java.nio.file.Path;
-// import java.nio.file.Paths;
-
-import com.example.backend.model.forms.TechnicalEvent;
-import com.example.backend.service.TechnicalEventService;
-
+import java.io.IOException;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -38,42 +24,88 @@ public class TechnicalEventController {
     private TechnicalEventService technicalEventService;
 
     @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<String> submitTechnicalEvent(
-            @RequestParam("id") Long id,
-            @RequestParam("name") String name,
-            @RequestParam("date") String date,
-            @RequestParam("host") String host,
-            @RequestParam("category") String category,
-            @RequestParam("achievement") String achievement,
-            @RequestParam("description") String description,
-            @RequestParam("status") String status,
-            @RequestParam("proofDocument") MultipartFile proofDocument) {
+public ResponseEntity<String> submitTechnicalEvent(
+        @RequestParam("name") String name,
+        @RequestParam("date") String date,
+        @RequestParam("host") String host,
+        @RequestParam("category") String category,
+        @RequestParam("achievement") String achievement,
+        @RequestParam("description") String description,
+        @RequestParam("proofDocument") MultipartFile proofDocument) {
+    try {
+        // Save file and get its path
+        String proofDocumentLink = technicalEventService.saveFile(proofDocument);
 
-        try {
-            // Save the uploaded file
-            String proofDocumentLink = saveFile(proofDocument);
+        // Create and save TechnicalEvent (WITHOUT setting ID manually)
+        TechnicalEvent technicalEvent = new TechnicalEvent();
+        technicalEvent.setName(name);
+        technicalEvent.setDate(date);
+        technicalEvent.setHost(host);
+        technicalEvent.setCategory(category);
+        technicalEvent.setAchievement(achievement);
+        technicalEvent.setDescription(description);
+        technicalEvent.setStatus("Pending");
+        technicalEvent.setProofDocumentLink(proofDocumentLink);
 
-            // Create a new TechnicalEvent object
-            TechnicalEvent technicalEvent = new TechnicalEvent();
-            technicalEvent.setId(id);
-            technicalEvent.setName(name);
-            technicalEvent.setDate(date);
-            technicalEvent.setHost(host);
-            technicalEvent.setCategory(category);
-            technicalEvent.setAchievement(achievement);
-            technicalEvent.setDescription(description);
-            technicalEvent.setStatus(status);
-            technicalEvent.setProofDocumentLink(proofDocumentLink);
+        technicalEventService.saveTechnicalEvent(technicalEvent);
 
-            // Save the TechnicalEvent to the database
-            technicalEventService.saveTechnicalEvent(technicalEvent);
-
-            return new ResponseEntity<>("Technical Event submitted successfully!", HttpStatus.OK);
-        } catch (IOException e) {
-            logger.error("Error saving file: ", e);
-            return new ResponseEntity<>("Error submitting technical event", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return ResponseEntity.ok("Technical Event submitted successfully!");
+    } catch (IOException e) {
+        logger.error("Error saving file: ", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error submitting technical event");
     }
+}
+
+
+    // @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+    //     try {
+    //         if (file.isEmpty()) {
+    //             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
+    //         }
+    //         String filePath = technicalEventService.saveFile(file);
+    //         return ResponseEntity.ok(filePath);
+    //     } catch (IOException e) {
+    //         logger.error("Error uploading file: ", e);
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file");
+    //     }
+    // }
+
+
+    // @GetMapping("/hello") // Endpoint: http://localhost:8080/api/hello
+    // public String hello() {
+    //     return "Hello, World!";
+    // }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // private String saveFile(MultipartFile file) throws IOException {
     //     String uploadDir = System.getProperty("user.dir") + "/TechnicalEvents/"; // Standard path
@@ -96,57 +128,3 @@ public class TechnicalEventController {
 
     //     return filePath.toAbsolutePath().toString();
     // }
-
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            if (file.isEmpty()) {
-                return new ResponseEntity<>("File is empty", HttpStatus.BAD_REQUEST);
-            }
-
-            // Save the uploaded file
-            String filePath = saveFile(file);
-
-            return new ResponseEntity<>(filePath, HttpStatus.OK);
-        } catch (IOException e) {
-            logger.error("Error uploading file: ", e);
-            return new ResponseEntity<>("Error uploading file", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-
-    private String saveFile(MultipartFile file) throws IOException {
-    String uploadDir = System.getProperty("user.dir") + "/TechnicalEvents/";
-    File directory = new File(uploadDir);
-    if (!directory.exists()) {
-        directory.mkdirs();
-    }
-
-    // Generate a unique filename (UUID to ensure uniqueness)
-    String fileExtension = "";
-    String originalFilename = file.getOriginalFilename();
-    
-    if (originalFilename != null && originalFilename.contains(".")) {
-        fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-    }
-
-    String fileName = UUID.randomUUID().toString() + fileExtension;  // Safe unique filename
-    Path filePath = Paths.get(uploadDir, fileName);
-
-    Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-    
-
-    return filePath.toAbsolutePath().toString();
-}
-
-
-
-    // @GetMapping("/hello") // Endpoint: http://localhost:8080/api/hello
-    // public String hello() {
-    //     return "Hello, World!";
-    // }
-
-
-}

@@ -20,7 +20,7 @@ public class JwtUtil {
         this.jwtConfig = jwtConfig;
     }
 
-    // ✅ Convert secret key to bytes
+    // ✅ Convert secret key to bytes and create a signing key
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtConfig.getSecret());
         return Keys.hmacShaKeyFor(keyBytes);
@@ -37,16 +37,36 @@ public class JwtUtil {
                 .compact();
     }
 
-    // ✅ Extract role from JWT
-    public String extractRole(String token) {
-        return extractClaims(token).get("role", String.class);
+    // ✅ Validate JWT Token
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                .setSigningKey(getSigningKey()) // ✅ Uses `getSigningKey()`
+                .build()
+                .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private Claims extractClaims(String token) {
+    // ✅ Extract email from JWT
+    public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey()) // ✅ Uses `getSigningKey()`
                 .build()
                 .parseClaimsJws(token)
-                .getBody();
+                .getBody()
+                .getSubject();
+    }
+
+    // ✅ Extract role from JWT
+    public String extractRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey()) // ✅ Uses `getSigningKey()`
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
     }
 }

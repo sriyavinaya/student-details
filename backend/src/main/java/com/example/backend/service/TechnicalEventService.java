@@ -27,23 +27,12 @@ public class TechnicalEventService {
 
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/TechnicalEvents/";
 
-    /**
-     * Saves a TechnicalEvent object to the database.
-     * 
-     * @param technicalEvent The event to save.
-     * @return The saved event.
-     */
+
     public TechnicalEvent saveTechnicalEvent(TechnicalEvent technicalEvent) {
         return technicalEventRepository.save(technicalEvent);
     }
 
-    /**
-     * Saves an uploaded file and returns its path.
-     * 
-     * @param file The file to save.
-     * @return The absolute path of the saved file.
-     * @throws IOException If an error occurs during file saving.
-     */
+
     public String saveFile(MultipartFile file) throws IOException {
         File directory = new File(UPLOAD_DIR);
         if (!directory.exists()) {

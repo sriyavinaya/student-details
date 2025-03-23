@@ -16,4 +16,19 @@ public class UserService {
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
+    public String getUserRoleByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.map(User::getRole).orElse("ROLE_UNKNOWN");
+    }
+
+    public Optional<User> authenticate(String email, String password) {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isPresent()) {
+            return user;
+        }
+        return Optional.empty();
+    }
+
+    
 }

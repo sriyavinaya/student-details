@@ -13,15 +13,15 @@ const FacultyDashboardLayout = () => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Redirect to login if not logged in
-  if (!isLoggedIn) {
-    return <Navigate to="/login" />;
-  }
+  // // Redirect to login if not logged in
+  // if (!isLoggedIn) {
+  //   return <Navigate to="/login" />;
+  // }
 
-  // Redirect to homepage if not a faculty
-  if (userRole !== 'faculty') {
-    return <Navigate to="/" />;
-  }
+  // // Redirect to homepage if not a faculty
+  // if (userRole !== 'faculty') {
+  //   return <Navigate to="/" />;
+  // }
 
   return (
     <div className="dashboard-container">

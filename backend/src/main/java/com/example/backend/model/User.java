@@ -10,11 +10,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    // @Column(nullable = false)
+    // private String name;
+
+    // private String lastName;
+
     @Column(unique = true, nullable = false)
     private String email;
 
     @Column(nullable = false)
-    private String role; // ROLE_ADMIN, ROLE_FACULTY, ROLE_STUDENT
+    private String role;
 
     // ✅ Constructors
     public User() {}

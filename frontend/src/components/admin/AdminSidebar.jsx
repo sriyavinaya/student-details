@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink , useParams} from "react-router-dom";
 import { 
   Users, 
   User,
@@ -34,19 +34,20 @@ const SidebarItem = ({ to, icon, label, isCollapsed }) => {
 const AdminSidebar = () => {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const {id} = useParams();
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
   
   const sidebarItems = [
-    { to: "/admin", icon: <Home size={18} />, label: "Dashboard", id: "dashboard" },
-    { to: "/admin/student-profiles", icon: <Users size={18} />, label: "Student Profiles", id: "student-profiles" },
-    { to: "/admin/faculty-profiles", icon: <User size={18} />, label: "Faculty Profiles", id: "faculty-profiles" },
-    { to: "/admin/flagged-records", icon: <Flag size={18} />, label: "Flagged Records", id: "flagged-records" },
-    { to: "/admin/edit-fields", icon: <Edit size={18} />, label: "Edit Fields", id: "edit-fields" },
-    { to: "/admin/import-details", icon: <FileInput size={18} />, label: "Import Details", id: "import-details" },
-    { to: "/admin/export-details", icon: <FileDown size={18} />, label: "Export Details", id: "export-details" },
+    { to: `/admin/${id}`, icon: <Home size={18} />, label: "Dashboard", id: "dashboard" },
+    { to: `/admin/${id}/student-profiles`, icon: <Users size={18} />, label: "Student Profiles", id: "student-profiles" },
+    { to: `/admin/${id}/faculty-profiles`, icon: <User size={18} />, label: "Faculty Profiles", id: "faculty-profiles" },
+    { to: `/admin/${id}/flagged-records`, icon: <Flag size={18} />, label: "Flagged Records", id: "flagged-records" },
+    { to: `/admin/${id}/edit-fields`, icon: <Edit size={18} />, label: "Edit Fields", id: "edit-fields" },
+    { to: `/admin/${id}/import-details`, icon: <FileInput size={18} />, label: "Import Details", id: "import-details" },
+    { to: `/admin/${id}/export-details`, icon: <FileDown size={18} />, label: "Export Details", id: "export-details" },
   ];
 
   return (

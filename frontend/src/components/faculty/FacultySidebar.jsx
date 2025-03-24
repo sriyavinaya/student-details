@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink , useParams} from "react-router-dom";
 import { 
   Home, 
   Users, 
@@ -9,6 +9,8 @@ import {
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/UserContext";
+
 
 const SidebarItem = ({ to, icon, label, isCollapsed }) => {
   return (
@@ -31,16 +33,19 @@ const SidebarItem = ({ to, icon, label, isCollapsed }) => {
 const FacultySidebar = () => {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
+  const { id } = useParams();
+  
+  
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
   
   const sidebarItems = [
-    { to: "/faculty", icon: <Home size={18} />, label: "Dashboard", id: "dashboard" },
-    { to: "/faculty/student-profiles", icon: <Users size={18} />, label: "Student Profiles", id: "student-profiles" },
-    { to: "/faculty/profile-verification", icon: <FileCheck size={18} />, label: "Profile Verification", id: "profile-verification" },
-    { to: "/faculty/export-details", icon: <Download size={18} />, label: "Export Details", id: "export-details" },
+    { to: `/faculty/${id}`, icon: <Home size={18} />, label: "Dashboard", id: "dashboard" },
+    { to: `/faculty/${id}/student-profiles`, icon: <Users size={18} />, label: "Student Profiles", id: "student-profiles" },
+    { to: `/faculty/${id}/profile-verification`, icon: <FileCheck size={18} />, label: "Profile Verification", id: "profile-verification" },
+    { to: `/faculty/${id}/export-details`, icon: <Download size={18} />, label: "Export Details", id: "export-details" },
   ];
 
   return (

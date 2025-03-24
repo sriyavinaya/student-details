@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,106 +32,84 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    private final JwtUtil jwtUtil;
-
-    // ✅ Use Constructor-based Injection for JwtUtil
-    public AuthController(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
+    
+    @PostMapping("/google-login")
+    public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
+        if (!request.containsKey("email")) {
+            return ResponseEntity.badRequest().body("Missing 'email' field in request.");
+        
+            
+        }
+    
+        String email = request.get("email");
+        Optional<User> authenticatedUser = userService.getUserByEmail(email);
+    
+        if (authenticatedUser.isPresent()) {
+            User user = authenticatedUser.get();
+            
+            // ✅ Store user info in the session
+            HttpSession session = httpRequest.getSession(true);
+            session.setAttribute("user", user);
+        
+            // ✅ Construct response
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId());
+            response.put("email", user.getEmail());
+            response.put("role", user.getRole());
+        
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(401).body("User not registered.");
+        }
     }
 
-    // @PostMapping("/manual-login")
-    // public ResponseEntity<?> manualLogin(@RequestBody Map<String, String> request) {
-    //     String email = request.get("email");
-    //     String role = request.get("role");
-    //     System.out.println(role);
 
-    //     Optional<User> userOptional = userRepository.findByEmail(email);
-
-    //     if (userOptional.isPresent()) {
-    //         User user = userOptional.get();
-
-    //         // Ensure role in request matches role in database (optional)
-    //         if (!user.getRole().equals(role)) {
-    //             return ResponseEntity.status(403).body(Map.of("error", "Incorrect role selected"));
-    //         }
-
-    //         return ResponseEntity.ok().body(Map.of(
-    //             "message", "Login successful",
-    //             "email", user.getEmail(),
-    //             "role", user.getRole()
-    //         ));
-    //     } else {
-    //         return ResponseEntity.status(401).body(Map.of("error", "User not found"));
-    //     }}
-
-
-        @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        // ✅ Invalidate session (if using session-based authentication)
+    @GetMapping("/check-session")
+    public ResponseEntity<?> checkSession(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate(); // Destroy session
+        
+        if (session == null || session.getAttribute("user") == null) {
+            return ResponseEntity.status(401).body("Session expired or not found.");
         }
 
-        // ✅ Clear security context (removes authentication)
-        SecurityContextHolder.clearContext();
+        
 
-        // ✅ Send response to frontend
-        return ResponseEntity.ok().body("Logged out successfully");
-    }
-
-    
-
-
-
-//     @GetMapping("/verify-token")
-//     public ResponseEntity<?> verifyToken(@RequestHeader("Authorization") String token) {
-//         try {
-//             String actualToken = token.replace("Bearer ", ""); // ✅ Remove Bearer prefix
-//             jwtUtil.extractRole(actualToken); // ✅ If this works, token is valid
-//             return ResponseEntity.ok().body("Token is valid");
-//         } catch (Exception e) {
-//             return ResponseEntity.status(401).body("Invalid token");
-//         }
-//     }
-
-    @PostMapping("/google-login")
-public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> request) {
-    System.out.println("\n\n"+request);
-    if (!request.containsKey("email")) {
-        return ResponseEntity.badRequest().body("Missing 'email' field in request.");
-    }
-
-    String email = request.get("email");
-    Optional<User> authenticatedUser = userService.getUserByEmail(email);
-
-    if (authenticatedUser.isPresent()) {
-        String role = authenticatedUser.get().getRole();
-        // String token = jwtUtil.generateToken(email, role);
+        // Retrieve user details from session
+        User user = (User) session.getAttribute("user");
 
         Map<String, Object> response = new HashMap<>();
-        response.put("email", email);
-        response.put("role", role);
-        // response.put("token", token);
+        response.put("id", user.getId());
+        response.put("email", user.getEmail());
+        response.put("role", user.getRole());
+
         return ResponseEntity.ok(response);
-    } else {
-        return ResponseEntity.status(401).body("User not registered.");
     }
+
+        @GetMapping("/users/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return userService.getUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/users")
+    public List<User> getAllUsers() {
+        return userService.getAllUsers()
+                .stream()
+                .filter(user -> !"admin".equalsIgnoreCase(user.getRole())) 
+                .collect(Collectors.toList());
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate(); // ✅ Destroy session
+        }
+
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok().body("Logged out successfully");
 }
 
-// @PostMapping("/logout")
-//     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-//         // ✅ Invalidate session (if using session-based authentication)
-//         HttpSession session = request.getSession(false);
-//         if (session != null) {
-//             session.invalidate(); // Destroy session
-//         }
-
-//         // ✅ Clear security context (removes authentication)
-//         SecurityContextHolder.clearContext();
-
-//         // ✅ Send response to frontend
-//         return ResponseEntity.ok().body("Logged out successfully");
-//     }
 
 }

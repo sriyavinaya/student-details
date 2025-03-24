@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { Outlet, useLocation, Navigate } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar";
 import TopHeader from "../TopHeader";
-import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@/contexts/UserContext";
 
 const AdminDashboardLayout = () => {
   const location = useLocation();
-  const { isLoggedIn, userRole } = useAuth();
+  const { isLoggedIn, userRole } = useUser();
   
   // Scroll to top when navigating to a new page
   useEffect(() => {

@@ -1,1 +1,41 @@
+
+# Node modules and build artifacts
+frontend/node_modules/
+frontend/dist/
+
+# Environment files
+frontend/.env
+frontend/.DS_Store  # macOS system file
+
+# Logs
+frontend/npm-debug.log
+frontend/yarn-error.log
+
+# Target directory (compiled Java files)
+backend/target/
+
+# Logs and environment files
+backend/logs/
+backend/*.log
+backend/.env
 backend/src/main/resources/application.properties
+
+# Maven wrapper binaries
+backend/mvnw
+backend/mvnw.cmd
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Global dependencies
+node_modules/
+.env
+*.log
+
+# IDE-specific files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws

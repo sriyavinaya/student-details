@@ -41,7 +41,8 @@ public class SecurityConfig {
                     "/login/oauth2/code/google",
                     "/api/auth/google-login",
                     "/admin/**",
-                    "/api/auth/users/${userId}"
+                    "/api/auth/users/${userId}",
+                    "/api/users/**"
             ).permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable());

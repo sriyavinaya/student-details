@@ -57,16 +57,6 @@ const DashboardLayout = () => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  // Redirect to login if not logged in
-  // if (!isLoggedIn) {
-  //   return <Navigate to="/login" />;
-  // }
-
-  // // Redirect to homepage if not a student
-  // if (userRole !== 'student') {
-  //   return <Navigate to="/" />;
-  // }
-
   return (
     <div className="dashboard-container">
       <StudentSidebar />

@@ -6,9 +6,8 @@ import { useUser } from "@/contexts/UserContext";
 
 
 const FacultyDashboardLayout = () => {
-  const [activePage, setActivePage] = useState("faculty"); // ✅ Fixed missing useState import
   const location = useLocation(); // ✅ Correctly initializing location
-  const user = useUser(); // ✅ Ensure that this is returning user data properly
+
 
   // Scroll to top when navigating to a new page
   useEffect(() => {

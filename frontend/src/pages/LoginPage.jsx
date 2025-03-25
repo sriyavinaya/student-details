@@ -10,7 +10,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 const LoginPage = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
-  const { loginUser } = useUser();  // ✅ Use loginUser from AuthContext
+  const { loginUser } = useUser();  
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -24,20 +24,23 @@ const LoginPage = () => {
         );
 
         const { email } = userInfoResponse.data;
-        // console.log("Sending email:", email);  // Debugging
-
 
         const backendResponse = await axios.post(
           "http://localhost:8080/api/auth/google-login",
-          { email: email },
+          { email },
           { withCredentials: true }
         );
 
         if (backendResponse.status === 200) {
-          const { token, role, id } = backendResponse.data;
+          const { email,role, id } = backendResponse.data;
 
-          // ✅ Call AuthContext login function to update global state
-          loginUser({ id, role, token });
+          // ✅ Update global user state
+          loginUser({
+            email: backendResponse.data.email,  // ✅ Correct 
+            role: backendResponse.data.role,
+            id: backendResponse.data.id,
+          });
+          
 
           // ✅ Navigate to the correct dashboard
           navigate(getDashboardRoute(role, id));
@@ -117,6 +120,7 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
 
 
 

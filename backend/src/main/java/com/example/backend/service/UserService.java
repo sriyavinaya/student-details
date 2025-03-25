@@ -40,5 +40,10 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public List<User> getUsersByRoles(List<String> roles) {
+        return userRepository.findByRoleIn(roles);
+    }
+    
+
     
 }

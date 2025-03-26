@@ -15,9 +15,9 @@ public class Admin extends User {
     // ✅ Constructors
     public Admin() {}
 
-    public Admin(Long id, String name, String email, String role, 
-                String phone) {
-        super(id, name, email, role);
+    public Admin(Long id, String name, String email, Role role, 
+                String phone, boolean isActive) {
+        super(id, name, email, role, isActive);
         // this.adminId = adminId;
         this.phone = phone;
     }

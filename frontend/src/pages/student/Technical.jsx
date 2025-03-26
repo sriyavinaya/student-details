@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PageTemplate from "@/components/student/StudentPageTemplate";
 import TechnicalEventsTable from "@/components/student/TechnicalEventsTable";
-import TechnicalEventForm from "@/components/student/TechnicalEventForm";
+import TechnicalEventsForm from "@/components/student/TechnicalEventsForm";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -105,7 +105,7 @@ const Technical = () => {
       </div>
 
       {showForm && (
-        <TechnicalEventForm 
+        <TechnicalEventsForm 
           event={editingEvent || undefined} 
           onClose={handleClose}
           onSave={handleSave}

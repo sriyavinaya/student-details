@@ -20,9 +20,9 @@ public class Faculty extends User {
     // ✅ Constructors
     public Faculty() {}
 
-    public Faculty(Long id, String name, String email, String role, 
-                   String faId, String department, String phone, List<Student> students) {
-        super(id, name, email, role);
+    public Faculty(Long id, String name, String email, Role role, 
+                   String faId, String department, String phone, List<Student> students, boolean isActive) {
+        super(id, name, email, role, isActive);
         this.faId = faId;
         this.department = department;
         this.phone = phone;

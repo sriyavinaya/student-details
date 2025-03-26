@@ -9,28 +9,29 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(nullable = false)
     private String name;
 
-    // private String lastName;
-
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Enumerated(EnumType.STRING) // ✅ Store role as a String in DB
+    private Role role;
+    
     @Column(nullable = false)
-    private String role;
+    private boolean isActive = true; // New field to track active status
 
     // ✅ Constructors
     public User() {}
 
-    public User(Long id, String name, String email, String role) {
+    public User(Long id, String name, String email, Role role, boolean isActive) {
         this.id = id;
         this.name = name;
-        // this.lastName = lastName;
         this.email = email;
         this.role = role;
+        this.isActive = isActive;
     }
 
     // ✅ Getters & Setters
@@ -38,7 +39,7 @@ public class User {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -50,14 +51,6 @@ public class User {
         this.name = name;
     }
 
-    // public String getLastName() {
-    //     return lastName;
-    // }
-
-    // public void setLastName(String lastName) {
-    //     this.lastName = lastName;
-    // }
-
     public String getEmail() {
         return email;
     }
@@ -66,11 +59,19 @@ public class User {
         this.email = email;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

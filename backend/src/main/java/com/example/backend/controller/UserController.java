@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.service.UserService;
 
@@ -28,10 +29,11 @@ public class UserController {
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers()
                 .stream()
-                .filter(user -> !"admin".equalsIgnoreCase(user.getRole())) 
+                .filter(user -> user.getRole() != Role.ADMIN) // Compare with enum directly
                 .collect(Collectors.toList());
         return ResponseEntity.ok(users);
     }
+    
 
     @GetMapping("/roles")
     public ResponseEntity<List<User>> getUsersByRoles(@RequestParam List<String> roles) {

@@ -1,4 +1,4 @@
-package com.example.backend.repository;
+package com.example.backend.repository.student;
 
 import java.util.List;
 
@@ -10,5 +10,8 @@ import com.example.backend.model.student.TechnicalEvent;
 @Repository
 public interface TechnicalEventRepository extends JpaRepository<TechnicalEvent, Long> {
     
-    List<TechnicalEvent> findByStatus(String status);
+    List<TechnicalEvent> findByVerificationStatus(String verificationStatus);
+    
+    List<TechnicalEvent> findByStudentId(Long studentId);
+
 }

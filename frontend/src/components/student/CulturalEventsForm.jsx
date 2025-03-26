@@ -5,17 +5,16 @@ import axios from 'axios'; // Import axios
 
 
 const categoryOptions = [
-    'Hackathon',
+    'Competition',
     'Workshop',
-    'Competitions',
-    'Technical fest - Tathva',
-    'Technical fest of other colleges',
+    'Cultural fest - Ragam',
+    'Cultural fest of other colleges',
     'Other',
 ];
 
 const statusOptions = ['Pending', 'Rejected', 'Approved'];
 
-const TechnicalEventForm = ({ event, onClose, onSave }) => {
+const CulturalEventsForm = ({ event, onClose, onSave }) => {
     const { toast } = useToast();
     const [formData, setFormData] = useState({
         name: '',
@@ -283,4 +282,4 @@ const TechnicalEventForm = ({ event, onClose, onSave }) => {
     );
 };
 
-export default TechnicalEventForm;
+export default CulturalEventsForm;

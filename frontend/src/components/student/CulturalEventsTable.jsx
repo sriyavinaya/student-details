@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";  // ✅ Correct import
 
 const ITEMS_PER_PAGE = 10;
 
-const TechnicalEventsTable = () => {
+const CulturalEventsTable = () => {
   const [events, setEvents] = useState([]);
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -19,8 +19,7 @@ const TechnicalEventsTable = () => {
 
     const fetchEvents = async () => {
       try {
-        // console.log(id);
-        const response = await axios.get(`http://localhost:8080/api/technical/student/${id}`, {
+        const response = await axios.get(`http://localhost:8080/api/cultural/student/${id}`, {
           withCredentials: true,
         });
         setEvents(response.data);
@@ -160,29 +159,29 @@ const TechnicalEventsTable = () => {
   );
 };
 
-export default TechnicalEventsTable;
+export default CulturalEventsTable;
 
 
 
 
 
-
-
-
-// import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from "react";
 // import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 // import { ArrowUpDown } from "lucide-react";
-// import axios from 'axios';
+// import axios from "axios";
 
-// const TechnicalEventsTable = () => {
+// const ITEMS_PER_PAGE = 10;
+
+// const CulturalEventsTable = () => {
 //   const [events, setEvents] = useState([]);
-//   const [sortField, setSortField] = useState(""); 
-//   const [sortDirection, setSortDirection] = useState("asc"); 
+//   const [sortField, setSortField] = useState("");
+//   const [sortDirection, setSortDirection] = useState("asc");
+//   const [currentPage, setCurrentPage] = useState(1); // Track the current page
 
 //   useEffect(() => {
 //     const fetchEvents = async () => {
 //       try {
-//         const response = await axios.get('http://localhost:8080/api/technical/all', {
+//         const response = await axios.get("http://localhost:8080/api/technical/all", {
 //           withCredentials: true,
 //         });
 //         setEvents(response.data);
@@ -195,10 +194,8 @@ export default TechnicalEventsTable;
 
 //   const handleSortClick = (field) => {
 //     if (sortField === field) {
-//       // Toggle sort direction if the same field is clicked again
 //       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
 //     } else {
-//       // Set new sort field and reset to ascending order
 //       setSortField(field);
 //       setSortDirection("asc");
 //     }
@@ -207,7 +204,7 @@ export default TechnicalEventsTable;
 //   // Sorting logic
 //   const sortedEvents = [...events].sort((a, b) => {
 //     if (!sortField) return 0;
-    
+
 //     const valueA = a[sortField] || "";
 //     const valueB = b[sortField] || "";
 
@@ -218,46 +215,27 @@ export default TechnicalEventsTable;
 //     }
 //   });
 
+//   // Pagination logic
+//   const totalPages = Math.ceil(sortedEvents.length / ITEMS_PER_PAGE);
+//   const paginatedEvents = sortedEvents.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
 //   return (
 //     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
 //       <Table>
 //         <TableHeader>
 //           <TableRow className="bg-gray-100">
-//                       <TableHead className="cursor-pointer" onClick={() => handleSortClick("name")}>
-//                       <div className="flex items-center gap-1">
-//                         Event Name <ArrowUpDown size={14} className="opacity-50" />
-//                       </div>
-//                       </TableHead>
-//                       <TableHead className="cursor-pointer" onClick={() => handleSortClick("date")}>
-//                       <div className="flex items-center gap-1">
-//                         Date <ArrowUpDown size={14} className="opacity-50" />
-//                       </div>
-//                       </TableHead>
-//                       <TableHead className="cursor-pointer" onClick={() => handleSortClick("host")}>
-//                       <div className="flex items-center gap-1">
-//                         Host <ArrowUpDown size={14} className="opacity-50" />
-//                       </div>
-//                       </TableHead>
-//                       <TableHead className="cursor-pointer" onClick={() => handleSortClick("category")}>
-//                       <div className="flex items-center gap-1">
-//                         Category <ArrowUpDown size={14} className="opacity-50" />
-//                       </div>
-//                       </TableHead>
-//                       <TableHead className="cursor-pointer" onClick={() => handleSortClick("achievement")}>
-//                       <div className="flex items-center gap-1">
-//                         Achievement <ArrowUpDown size={14} className="opacity-50" />
-//                       </div>
-//                       </TableHead>
-//                       <TableHead className="cursor-pointer" onClick={() => handleSortClick("status")}>
-//                       <div className="flex items-center gap-1">
-//                         Status <ArrowUpDown size={14} className="opacity-50" />
-//                       </div>
-//                       </TableHead>
-//                     </TableRow>
+//             {["name", "date", "host", "category", "achievement", "status"].map((field) => (
+//               <TableHead key={field} className="cursor-pointer" onClick={() => handleSortClick(field)}>
+//                 <div className="flex items-center gap-1">
+//                   {field.charAt(0).toUpperCase() + field.slice(1)} <ArrowUpDown size={14} className="opacity-50" />
+//                 </div>
+//               </TableHead>
+//             ))}
+//           </TableRow>
 //         </TableHeader>
 //         <TableBody>
-//           {sortedEvents.length > 0 ? (
-//             sortedEvents.map((event) => (
+//           {paginatedEvents.length > 0 ? (
+//             paginatedEvents.map((event) => (
 //               <TableRow key={event.id}>
 //                 <TableCell>{event.name}</TableCell>
 //                 <TableCell>{event.date}</TableCell>
@@ -265,18 +243,18 @@ export default TechnicalEventsTable;
 //                 <TableCell>{event.category}</TableCell>
 //                 <TableCell>{event.achievement || "N/A"}</TableCell>
 //                 <TableCell>
-//                 <span
-//                   className={`text-sm font-semibold ${
-//                     event.status === "Pending"
-//                       ? "text-yellow-500" // Dark yellow text
-//                       : event.status === "Approved"
-//                       ? "text-green-600" // Green text
-//                       : "text-red-600" // Red text
-//                   }`}
-//                 >
-//                   {event.status}
-//                 </span>
-//               </TableCell>
+//                   <span
+//                     className={`text-sm font-semibold ${
+//                       event.status === "Pending"
+//                         ? "text-yellow-500"
+//                         : event.status === "Approved"
+//                         ? "text-green-600"
+//                         : "text-red-600"
+//                     }`}
+//                   >
+//                     {event.status}
+//                   </span>
+//                 </TableCell>
 //               </TableRow>
 //             ))
 //           ) : (
@@ -288,24 +266,29 @@ export default TechnicalEventsTable;
 //           )}
 //         </TableBody>
 //       </Table>
+
+//       {/* Pagination Controls */}
+//       <div className="flex justify-between items-center p-4">
+//         <button
+//           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+//           disabled={currentPage === 1}
+//           className="px-4 py-2 bg-gray-200 text-gray-600 rounded disabled:opacity-50"
+//         >
+//           Previous
+//         </button>
+//         <span className="text-gray-600">
+//           Page {currentPage} of {totalPages}
+//         </span>
+//         <button
+//           onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+//           disabled={currentPage === totalPages}
+//           className="px-4 py-2 bg-gray-200 text-gray-600 rounded disabled:opacity-50"
+//         >
+//           Next
+//         </button>
+//       </div>
 //     </div>
 //   );
 // };
 
-// export default TechnicalEventsTable;
-
-
-
-// // <TableCell>
-// //                   <span
-// //                     className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-// //                       event.status === "Pending"
-// //                         ? "bg-yellow-500 text-white"
-// //                         : event.status === "Approved"
-// //                         ? "bg-green-500 text-white"
-// //                         : "bg-red-500 text-white"
-// //                     }`}
-// //                   >
-// //                     {event.status}
-// //                   </span>
-// //                 </TableCell>
+// export default CulturalEventsTable;

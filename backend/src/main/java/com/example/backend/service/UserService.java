@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.model.Role;
 import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,11 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public String getUserRoleByEmail(String email) {
+    public Role getUserRoleByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
-        return user.map(User::getRole).orElse("ROLE_UNKNOWN");
+        return user.map(User::getRole).orElse(null);
     }
+    
 
     public Optional<User> authenticate(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);

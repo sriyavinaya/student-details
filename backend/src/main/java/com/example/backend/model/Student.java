@@ -3,6 +3,8 @@ package com.example.backend.model;
 import jakarta.persistence.*;
 import java.util.Date;
 
+import com.example.backend.repository.FacultyRepository;
+
 @Entity
 @Table(name = "student")  
 public class Student extends User {
@@ -10,10 +12,10 @@ public class Student extends User {
     @Column(name = "roll_no", unique = true, nullable = false)  
     private String rollNo;
 
-    @Column(name = "date_of_birth", nullable = false)  
+    @Column(name = "date_of_birth", nullable = true)  
     private Date dateOfBirth;
 
-    @Column(name = "degree", nullable = false)  
+    @Column(name = "degree", nullable = true)  
     private String degree;
 
     private String department;
@@ -41,18 +43,20 @@ public class Student extends User {
     private String country;
 
     @ManyToOne
-    @JoinColumn(name = "faculty_id", nullable = false)  
+    @JoinColumn(name = "faculty_email", referencedColumnName = "email", nullable = false)
     private Faculty faculty;
+    
+    
 
     // ✅ Constructors
     public Student() {}
 
-    public Student(Long id, String name, String email, String role, 
+    public Student(Long id, String name, String email, Role role, 
                    String rollNo, Date dateOfBirth, String degree, String department, 
                    int batch, String studentClass,double cgpa, String gender,
                    String address, String city, String state, String postalCode, 
-                   String country, Faculty faculty) {
-        super(id, name, email, role);
+                   String country, Faculty faculty, boolean isActive) {
+        super(id, name, email, role, isActive);
         this.rollNo = rollNo;
         this.dateOfBirth = dateOfBirth;
         this.degree = degree;
@@ -178,8 +182,15 @@ public class Student extends User {
     public Faculty getFaculty() {
         return faculty;
     }
-
+    
     public void setFaculty(Faculty faculty) {
         this.faculty = faculty;
     }
+
+    public void setFaEmail(String faEmail, FacultyRepository facultyRepository) {
+        this.faculty = facultyRepository.findByEmail(faEmail)
+            .orElseThrow(() -> new IllegalArgumentException("Faculty with email " + faEmail + " not found"));
+    }
+
+    
 }

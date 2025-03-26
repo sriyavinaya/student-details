@@ -62,11 +62,11 @@ const LoginPage = () => {
 
   const getDashboardRoute = (role, id) => {
     switch (role) {
-      case "student":
+      case "STUDENT":
         return `/dashboard/${id}`;
-      case "faculty":
+      case "FACULTY":
         return `/faculty/${id}`;
-      case "admin":
+      case "ADMIN":
         return `/admin/${id}`;
       default:
         toast.error("Invalid role. Please contact support.");

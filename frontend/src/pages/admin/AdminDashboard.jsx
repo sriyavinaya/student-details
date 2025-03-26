@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import DashboardHeader from "@/components/student/StudentDashboardHeader";
 
 const StatCard = ({ title, count, bgColor = "bg-gray-200", onClick }) => {
@@ -21,6 +21,7 @@ const StatCard = ({ title, count, bgColor = "bg-gray-200", onClick }) => {
 const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const {id} = useParams();
 
   useEffect(() => {
     // Simulate loading
@@ -32,15 +33,15 @@ const AdminDashboard = () => {
   }, []);
 
   const handleViewStudentProfiles = () => {
-    navigate('/admin/student-profiles');
+    navigate(`/admin/${id}/student-profiles`);
   };
 
   const handleViewFacultyProfiles = () => {
-    navigate('/admin/faculty-profiles');
+    navigate(`/admin/${id}/faculty-profiles`);
   };
 
   const handleViewFlaggedRecords = () => {
-    navigate('/admin/flagged-records');
+    navigate(`/admin/${id}/flagged-records`);
   };
 
   return (

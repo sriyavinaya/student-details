@@ -1,62 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PageTemplate from "@/components/student/StudentPageTemplate";
 import TechnicalEventsTable from "@/components/student/TechnicalEventsTable";
 import TechnicalEventsForm from "@/components/student/TechnicalEventsForm";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Filter } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Plus, Search } from "lucide-react";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const Technical = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
-  const [sortField, setSortField] = useState("");
-  const [sortDirection, setSortDirection] = useState("asc");
   const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const { toast } = useToast();
+  const { id } = useParams();
 
-  const navigate = useNavigate();
+  // Single source of data fetching - only in parent
+  
 
-  // Function to refresh the table data
-  const refreshTable = async () => {
-    try {
-      const response = await axios.get("http://localhost:8080/api/technical/all", {
-        withCredentials: true,
+  // Fetch data on mount and when id changes
+  useEffect(() => {
+    refreshTable();
+  }, [id]);
+
+  // Filter logic remains in parent
+  useEffect(() => {
+    if (searchTerm === "") {
+      setFilteredEvents(events);
+    } else {
+      const filtered = events.filter(event => {
+        const searchTermLower = searchTerm.toLowerCase();
+        
+        return (
+          (event.title?.toLowerCase() || '').includes(searchTermLower) ||
+          (event.description?.toLowerCase() || '').includes(searchTermLower) ||
+          (event.date ? event.date.toString().toLowerCase() : '').includes(searchTermLower) ||
+          (event.host?.toLowerCase() || '').includes(searchTermLower)
+        );
       });
-      setEvents(response.data); // ✅ Update state with new events
+      setFilteredEvents(filtered);
+    }
+  }, [searchTerm, events]);
+
+  const handleSave = async (newEvent) => {
+    try {
+      // First close the form immediately
+      setShowForm(false);
+      
+      // Then refresh the data from server
+      await refreshTable();
+      
+      toast({
+        title: "Success",
+        description: "Event added successfully",
+      });
     } catch (error) {
-      console.error("Failed to fetch events", error);
+      toast({
+        title: "Error",
+        description: "Failed to verify event addition",
+        variant: "destructive",
+      });
     }
   };
-  
-  const handleSave = (updatedEvent) => {
-    // In a real app, this would update the backend
-    toast({
-      title: "Event updated",
-      description: "The event details have been updated successfully",
-    });
-    setEditingEvent(null);
-    setShowForm(false);
-    refreshTable(); // Refresh the table after saving
-  };
 
-  const handleClose = () => {
-    setEditingEvent(null);
-    setShowForm(false);
-  };
 
-  const handleAddNew = () => {
-    setShowForm(true);
-  };
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
+  const refreshTable = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/technical/student/object/${id}`,
+        { withCredentials: true }
+      );
+      setEvents(response.data);
+      setFilteredEvents(response.data);
+      return true; // Indicate success
+    } catch (error) {
+      console.error("Failed to fetch events", error);
+      throw error; // Re-throw for error handling
     }
   };
 
@@ -76,25 +96,9 @@ const Technical = () => {
           </div>
           
           <div className="flex gap-2">
-            <div className="relative">
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none"
-              >
-                <option value="">All Categories</option>
-                <option value="Hackathon">Hackathon</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Competitions">Competitions</option>
-                <option value="Technical fest - Tathva">Technical fest - Tathva</option>
-                <option value="Technical fest of other colleges">Technical fest of other colleges</option>
-                <option value="Other">Other</option>
-              </select>
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            </div>
-            
             <button
-              onClick={handleAddNew}
+            onClick={() => setShowForm(true)}
+              // onClick={handleAddNew}
               className="flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
             >
               <Plus size={16} />
@@ -106,30 +110,17 @@ const Technical = () => {
 
       {showForm && (
         <TechnicalEventsForm 
-          event={editingEvent || undefined} 
-          onClose={handleClose}
+          onClose={() => setShowForm(false)}
           onSave={handleSave}
-          refreshTable={refreshTable} // Pass the refresh function
+          refreshTable={refreshTable}
         />
       )}
+      
       <TechnicalEventsTable 
-        searchTerm={searchTerm}
-        filterCategory={filterCategory}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={handleSort}
+        events={filteredEvents}
       />
     </PageTemplate>
   );
 };
 
 export default Technical;
-
-
-
-
-
-
-
-
-

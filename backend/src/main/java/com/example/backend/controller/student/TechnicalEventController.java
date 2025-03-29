@@ -1,11 +1,12 @@
 package com.example.backend.controller.student;
 
 import com.example.backend.model.Student;
+import com.example.backend.model.Faculty;
 import com.example.backend.model.student.TechnicalEvent;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.student.TechnicalEventRepository;
+import com.example.backend.service.student.MainService;
 import com.example.backend.service.student.TechnicalEventService;
-
-import jakarta.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,15 +17,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
@@ -39,83 +42,129 @@ public class TechnicalEventController {
     @Autowired
     private UserRepository userRepository;
 
-    // ✅ **Submit a Technical Event with studentId**
+    @Autowired
+    private TechnicalEventRepository technicalEventRepository;
+
+    @Autowired
+    private MainService mainService;
+
+    
+
+    
     @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-public ResponseEntity<String> submitTechnicalEvent(
-    @RequestParam("studentId") Long studentId,
-    @RequestParam("title") String title,
-    @RequestParam("eventDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate eventDate,
-    @RequestParam("host") String host,
-    @RequestParam("category") String category,
-    @RequestParam("achievement") String achievement,
-    @RequestParam("description") String description,
-    @RequestParam("documentPath") MultipartFile documentPath) {  
+    @Transactional
+    public ResponseEntity<Map<String, Object>> submitTechnicalEvent(
+        @RequestParam("studentId") Long studentId,
+        @RequestParam("title") String title,
+        @RequestParam("eventDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate eventDate,
+        @RequestParam("host") String host,
+        @RequestParam("category") String category,
+        @RequestParam("achievement") String achievement,
+        @RequestParam("description") String description,
+        @RequestParam(value = "documentPath", required = false) MultipartFile documentPath) {
 
-    try {
-        // ✅ Save file and get its path
-        String documentLink = technicalEventService.saveFile(documentPath);
+        try {
+            // 1. Get and validate student
+            Student student = userRepository.findById(studentId)
+                .filter(user -> user instanceof Student)
+                .map(user -> (Student) user)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
 
-        // ✅ Fetch student to get faculty ID
+            // 2. Get faculty from student (must exist)
+            Faculty faculty = student.getFaculty();
+            if (faculty == null) {
+                throw new IllegalStateException("Student with ID " + studentId + " has no faculty assigned");
+            }
+
+            // 3. Handle file upload if present
+            String documentLink = null;
+            if (documentPath != null && !documentPath.isEmpty()) {
+                documentLink = mainService.saveFile(documentPath);
+            }
+
+            // 4. Create and populate TechnicalEvent
+            TechnicalEvent event = new TechnicalEvent();
+            event.setTitle(title);
+            event.setDescription(description);
+            event.setStudent(student);  // Critical - sets student_id
+            event.setFaculty(faculty);  // Critical - sets faculty_id
+            event.setEventDate(eventDate);
+            event.setHost(host);
+            event.setCategory(category);
+            event.setAchievement(achievement);
+            event.setDocumentPath(documentLink);
+            event.setVerificationStatus("Pending"); // Default status
+
+            // 5. Save and verify
+            TechnicalEvent savedEvent = technicalEventRepository.save(event);
+            technicalEventRepository.flush(); // Force immediate persistence
+
+            // Verify relationships were saved
+            if (savedEvent.getStudent() == null || savedEvent.getFaculty() == null) {
+                throw new IllegalStateException("Failed to persist relationships");
+            }
+
+            // 6. Return success response
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Technical Event submitted successfully");
+            response.put("eventId", savedEvent.getId());
+            response.put("studentId", savedEvent.getStudent().getId());
+            response.put("facultyId", savedEvent.getFaculty().getId());
+
+            logger.info("Successfully created TechnicalEvent ID {} for student {}", 
+                savedEvent.getId(), studentId);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            logger.error("Error submitting technical event", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+     @GetMapping("/all")
+    public ResponseEntity<?> getAllEvents() {
+        try {
+            List<TechnicalEvent> events = technicalEventService.getAllEvents();
+            if (events.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            logger.error("Failed to fetch events: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                   .body(Map.of(
+                       "error", "Failed to fetch events",
+                       "message", e.getMessage(),
+                       "timestamp", LocalDateTime.now()
+                   ));
+        }
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<TechnicalEvent>> getEventsByStudentId(@PathVariable Long studentId) {
+        List<TechnicalEvent> events = technicalEventService.getEventsByStudentId(studentId);
+        return new ResponseEntity<>(events, HttpStatus.OK);
+    }
+    
+    @GetMapping("/student/object/{studentId}")
+    public ResponseEntity<List<TechnicalEvent>> getEventsByStudent(@PathVariable Long studentId) {
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)
             .map(user -> (Student) user)
             .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-
-        Long facultyId = student.getFaculty().getId(); // Get faculty ID from Student
-
-        // ✅ Create and save TechnicalEvent
-        TechnicalEvent technicalEvent = new TechnicalEvent(
-            title, description, studentId, facultyId, eventDate, host, category, achievement, documentLink
-        );
-
-        technicalEventService.saveTechnicalEvent(technicalEvent);
-
-        return ResponseEntity.ok("Technical Event submitted successfully!");
-    } catch (IOException e) {
-        logger.error("Error saving file: ", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error submitting technical event");
-    } catch (Exception e) {
-        logger.error("Error processing request: ", e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    }
-}
-
-
-
-    // ✅ **Get all Technical Events**
-    @GetMapping("/all")
-    public ResponseEntity<List<TechnicalEvent>> getAllEvents() {
-        List<TechnicalEvent> events = technicalEventService.getAllEvents();
+        
+        List<TechnicalEvent> events = technicalEventService.getEventsByStudent(student);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
-    // ✅ **Download Proof Document**
-    @GetMapping("/download/{eventId}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long eventId) {
-        try {
-            Resource file = technicalEventService.downloadFile(eventId);
-
-            if (file == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            }
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                    .body(file);
-        } catch (MalformedURLException e) {
-            logger.error("Error loading file for event ID: " + eventId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 
 
-    // ✅ **Get all Technical Events for a specific student**
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<TechnicalEvent>> getEventsByStudent(@PathVariable Long studentId) {
-        List<TechnicalEvent> events = technicalEventService.getEventsByStudent(studentId);
-        return new ResponseEntity<>(events, HttpStatus.OK);
-    }
+
 }
 
 
@@ -138,22 +187,6 @@ public ResponseEntity<String> submitTechnicalEvent(
 
 
 
-
-
-
-    // @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    // public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-    //     try {
-    //         if (file.isEmpty()) {
-    //             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
-    //         }
-    //         String filePath = technicalEventService.saveFile(file);
-    //         return ResponseEntity.ok(filePath);
-    //     } catch (IOException e) {
-    //         logger.error("Error uploading file: ", e);
-    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file");
-    //     }
-    // }
 
 
 

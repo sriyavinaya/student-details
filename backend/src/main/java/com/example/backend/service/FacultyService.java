@@ -18,46 +18,61 @@ public class FacultyService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
 
-    public FacultyService(FacultyRepository facultyRepository, UserRepository userRepository, StudentRepository studentRepository) {
+    public FacultyService(FacultyRepository facultyRepository, 
+                         UserRepository userRepository, 
+                         StudentRepository studentRepository) {
         this.facultyRepository = facultyRepository;
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
     }
 
-    // ✅ Fetch students under a faculty based on faculty email
-    public List<Student> getStudentsUnderFaculty(Long facultyId) {
-        // Get faculty's email from User table
-        String facultyEmail = userRepository.findById(facultyId)
-            .map(User::getEmail)
-            .orElseThrow(() -> new RuntimeException("Faculty not found"));
-
-        // Find students where faculty_email matches
-        return studentRepository.findStudentsByFaculty_Email(facultyEmail);
+    // Object-based version
+    public List<Student> getStudentsUnderFaculty(Faculty faculty) {
+        return facultyRepository.findStudentsByFaculty(faculty);
     }
 
-    // ✅ Fetch all faculty members
+    // ID-based version (existing)
+    public List<Student> getStudentsUnderFaculty(Long facultyId) {
+        // Get faculty first
+        Faculty faculty = facultyRepository.findById(facultyId)
+            .orElseThrow(() -> new RuntimeException("Faculty not found"));
+        
+        // Then get students using object reference
+        return facultyRepository.findStudentsByFaculty(faculty);
+        
+        // Or keep the existing email-based implementation:
+        // String facultyEmail = userRepository.findById(facultyId)
+        //     .map(User::getEmail)
+        //     .orElseThrow(() -> new RuntimeException("Faculty not found"));
+        // return studentRepository.findStudentsByFaculty_Email(facultyEmail);
+    }
+
+    // Get faculty by email
+    public Optional<Faculty> getFacultyByEmail(String email) {
+        return facultyRepository.findByEmail(email);
+    }
+
     public List<Faculty> getAllFaculty() {
         return facultyRepository.findAll();
     }
 
-    // ✅ Fetch faculty by ID
     public Optional<Faculty> getFacultyById(Long id) {
         return facultyRepository.findById(id);
     }
 
-    // ✅ Save faculty
     public Faculty saveFaculty(Faculty faculty) {
         return facultyRepository.save(faculty);
     }
 
-    // ✅ Delete faculty
     public void deleteFaculty(Long id) {
         facultyRepository.deleteById(id);
     }
 
-    
-}
+    public Object findById(Long facultyId) {
 
+        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+    }
+}
 
 
 

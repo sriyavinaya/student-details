@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios'; // Import axios
-
+import axios from 'axios';
 
 const categoryOptions = [
     'Hackathon',
@@ -13,9 +12,7 @@ const categoryOptions = [
     'Other',
 ];
 
-const statusOptions = ['Pending', 'Rejected', 'Approved'];
-
-const TechnicalEventsForm = ({ event, onClose, onSave }) => {
+const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
     const { toast } = useToast();
     const [formData, setFormData] = useState({
         title: '',
@@ -27,10 +24,10 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
         verificationStatus: 'Pending',
         documentPath: null,
     });
+    const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const userToken = JSON.parse(localStorage.getItem("user")); // Adjust if stored elsewhere
+    const userToken = JSON.parse(localStorage.getItem("user"));
     const userId = userToken ? userToken.id : null;
-
 
     useEffect(() => {
         if (event) {
@@ -38,13 +35,48 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
         }
     }, [event]);
 
+    const validateDate = (dateString) => {
+        if (!dateString) return false;
+        
+        // Check format is YYYY-MM-DD
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+        if (!datePattern.test(dateString)) return false;
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time part
+        const inputDate = new Date(dateString);
+        
+        return inputDate <= today;
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData.title.trim()) newErrors.title = 'Event name is required';
+        if (!formData.host.trim()) newErrors.host = 'Host is required';
+        if (!formData.category) newErrors.category = 'Category is required';
+        if (!formData.eventDate) {
+            newErrors.eventDate = 'Date is required';
+        } else if (!validateDate(formData.eventDate)) {
+            newErrors.eventDate = 'Date must be in YYYY-MM-DD format and cannot be in the future';
+        }
+        if (!formData.achievement.trim()) newErrors.achievement = 'Achievement is required';
+        if (!formData.description.trim()) newErrors.description = 'Description is required';
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
     };
 
     const handleFileChange = (e) => {
-        setFormData((prev) => ({ ...prev, documentPath: e.target.files[0] }));
+        setFormData(prev => ({ ...prev, documentPath: e.target.files[0] }));
     };
 
     const uploadProofDocument = async () => {
@@ -55,7 +87,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
 
         try {
             const response = await axios.post(
-                'http://localhost:8080/api/technical/upload',
+                'http://localhost:8080/api/main/upload',
                 fileData,
                 {
                     withCredentials: true, // Include credentials (cookies)
@@ -85,6 +117,20 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!userId) {
+            toast({
+                title: 'Error',
+                description: 'No student ID found. Please log in again.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (!validateForm()) {
+            return;
+        }
+
         setIsSubmitting(true);
 
         const requiredFields = ['title', 'host', 'category', 'eventDate', 'description'];
@@ -104,10 +150,6 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
         try {
             let documentLink = await uploadProofDocument();
 
-
-            // console.log("This is the user id" ,userId);
-
-
             const formDataToSend = new FormData();
             formDataToSend.append('studentId', userId); // Include student ID
             formDataToSend.append('id', formData.id || '0'); // Ensure ID is sent
@@ -125,11 +167,11 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
             const response = await axios.post(
                 'http://localhost:8080/api/technical/submit',
                 formDataToSend,
-                {
-                    withCredentials: true, // Include credentials (cookies)
+                { 
+                    withCredentials: true,
                     headers: {
-                        'Content-Type': 'multipart/form-data', // Set content type
-                    },
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
             );
 
@@ -137,37 +179,22 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
 
             toast({
                 title: 'Success',
-                description: 'Event details saved successfully.',
+                description: 'Record saved successfully!',
             });
 
-            onSave(formData);
-            resetForm();
+            onClose();
+            refreshTable();
+
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Submission error:', error);
             toast({
-                title: 'Submission Failed',
-                description: error.message || 'Could not save event details.',
+                title: 'Error',
+                description: error.response?.data?.message || 'Failed to save event',
                 variant: 'destructive',
             });
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-  
-
-    const resetForm = () => {
-        setFormData({
-            title: '',
-            eventDate: '',
-            host: '',
-            category: '',
-            achievement: '',
-            description: '',
-            verificationStatus: 'Pending',
-            documentPath: null,
-        });
-        document.querySelector('input[type="file"]').value = '';
     };
 
     const handleDiscard = () => {
@@ -181,7 +208,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
     return (
         <div className="bg-gray-200 rounded-lg p-6 mb-6">
             <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4">
                     <label className="block">
                         <span className="text-gray-700">
                             <span className="text-red-500">*</span> Event Name
@@ -191,8 +218,9 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                            className={`mt-1 block w-full rounded-md border ${errors.title ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         />
+                        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
                     </label>
 
                     <label className="block">
@@ -204,8 +232,9 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
                             name="host"
                             value={formData.host}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                            className={`mt-1 block w-full rounded-md border ${errors.host ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         />
+                        {errors.host && <p className="mt-1 text-sm text-red-600">{errors.host}</p>}
                     </label>
 
                     <label className="block">
@@ -216,15 +245,16 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
                             name="category"
                             value={formData.category}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                            className={`mt-1 block w-full rounded-md border ${errors.category ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         >
-                            <option value="">Select a value</option>
+                            <option value="">Select a category</option>
                             {categoryOptions.map((option) => (
                                 <option key={option} value={option}>
                                     {option}
                                 </option>
                             ))}
                         </select>
+                        {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
                     </label>
 
                     <label className="block">
@@ -236,21 +266,28 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
                             name="eventDate"
                             value={formData.eventDate}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                            max={new Date().toISOString()} // Prevent future dates in picker
+                            className={`mt-1 block w-full rounded-md border ${errors.eventDate ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         />
+                        {errors.eventDate && (
+                            <p className="mt-1 text-sm text-red-600">
+                                {errors.eventDate}
+                            </p>
+                        )}
                     </label>
 
                     <label className="block">
                         <span className="text-gray-700">
                             <span className="text-red-500">*</span> Achievement
                         </span>
-                            <input
+                        <input
                             type="text"
                             name="achievement"
                             value={formData.achievement}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                            className={`mt-1 block w-full rounded-md border ${errors.achievement ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         />
+                        {errors.achievement && <p className="mt-1 text-sm text-red-600">{errors.achievement}</p>}
                     </label>
 
                     <label className="block">
@@ -261,17 +298,27 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                            className={`mt-1 block w-full rounded-md border ${errors.description ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                            rows={3}
                         />
+                        {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                     </label>
 
                     <label className="block">
                         <span className="text-gray-700">Proof Document</span>
-                        <input
-                            type="file"
-                            onChange={handleFileChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        />
+                        <div className="mt-1 flex items-center">
+                            <input
+                                type="file"
+                                onChange={handleFileChange}
+                                className="block w-full border border-gray-300 rounded-md px-3 py-2"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            />
+                            {formData.documentPath && (
+                                <span className="ml-2 text-sm text-gray-600">
+                                    {formData.documentPath.name}
+                                </span>
+                            )}
+                        </div>
                     </label>
                 </div>
 

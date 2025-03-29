@@ -27,7 +27,7 @@ public class SecurityConfig {
                     "/api/faculty/**",     // Faculty operations
                     "/api/admin/**",       // Admin operations
                     "/api/technical/**",   // Technical Events (form submission, proof upload, etc.)
-                    "/api/technical/upload",   // Technical Events (form submission, proof upload, etc.)
+                    "/api/technical/all",   // Technical Events (form submission, proof upload, etc.)
                     "/api/technical/submit",   // Technical Events (form submission, proof upload, etc.)
                     "/api/technical/download/**",   // Technical Events (form submission, proof upload, etc.)
                     "/api/events/**",      // General event-related APIs
@@ -41,11 +41,12 @@ public class SecurityConfig {
                     "/v3/api-docs/**", "/swagger-ui/**",
                     "/login/oauth2/code/google",
                     "/api/auth/google-login",
-                    "/admin/**",
                     "/api/auth/users/${userId}",
                     "/api/users/**",
                     "/api/admin/all-students",
-                    "/api/faculty/**"
+                    "/api/faculty/**",
+                    "/api/students/**",
+                    "/api/main/**"
             ).permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable());

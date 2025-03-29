@@ -2,6 +2,11 @@ package com.example.backend.model.student;
 
 import java.time.LocalDate;
 
+import com.example.backend.model.Student;
+import com.example.backend.model.Faculty;
+import com.example.backend.model.student.Event;
+
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -11,16 +16,59 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "technical_events")
-@PrimaryKeyJoinColumn(name = "id") // Ensures it inherits from `events`
+@DiscriminatorValue("TechnicalEvent")
 public class TechnicalEvent extends Event {
-    public TechnicalEvent() {}
+    
+    public TechnicalEvent() {
+        super();
+    }
 
-    public TechnicalEvent(String eventName, LocalDate eventDate, String host, String category, 
-                          String achievement, String documentPath, String description, String verificationStatus,Long studentId, String comments) {
-        super(eventName, eventDate, host, category, achievement, documentPath, description, verificationStatus,studentId, comments);
+    public TechnicalEvent(String title, String description, Student student, Faculty faculty,
+                         LocalDate eventDate, String host, String category, 
+                         String achievement, String documentPath) {
+        super(title, description, student, faculty, eventDate, host, category, achievement, documentPath);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// package com.example.backend.model.student;
+
+// import java.time.LocalDate;
+
+// import jakarta.persistence.Entity;
+// import jakarta.persistence.PrimaryKeyJoinColumn;
+// import jakarta.persistence.Table;
+// import lombok.Getter;
+// import lombok.Setter;
+
+// @Getter
+// @Setter
+// @Entity
+// @Table(name = "technical_events")
+// @PrimaryKeyJoinColumn(name = "id") // Ensures it inherits from `events`
+// public class TechnicalEvent extends Event {
+//     public TechnicalEvent() {}
+
+//     public TechnicalEvent(String eventName, LocalDate eventDate, String host, String category, 
+//                           String achievement, String documentPath, String description, String verificationStatus,Long studentId, String comments) {
+//         super(eventName, eventDate, host, category, achievement, documentPath, description, verificationStatus,studentId, comments);
+//     }
+// }
 
 
 // package com.example.backend.model.student;

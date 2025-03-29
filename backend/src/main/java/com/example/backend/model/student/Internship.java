@@ -1,26 +1,26 @@
-package com.example.backend.model.student;
+// package com.example.backend.model.student;
 
-// Internship Model
+// // Internship Model
 
-import java.time.LocalDate;
+// import java.time.LocalDate;
 
-import jakarta.persistence.Entity;
-import lombok.Getter;
-import lombok.Setter;
+// import jakarta.persistence.Entity;
+// import lombok.Getter;
+// import lombok.Setter;
 
-@Getter
-@Setter
-@Entity
-public class Internship extends JobOpportunity {
-    private String duration;
+// @Getter
+// @Setter
+// @Entity
+// public class Internship extends JobOpportunity {
+//     private String duration;
 
-    public Internship() {}
+//     public Internship() {}
 
-    public Internship(String companyName, LocalDate startDate, String role, String offerLetterPath,
-                      String description, String verificationStatus, String duration) {
-        super(companyName, startDate, role, offerLetterPath, description, verificationStatus);
-        this.duration = duration;
-    }
+//     public Internship(String companyName, LocalDate startDate, String role, String offerLetterPath,
+//                       String description, String verificationStatus, String duration) {
+//         super(companyName, startDate, role, offerLetterPath, description, verificationStatus);
+//         this.duration = duration;
+//     }
 
-    // Getters and Setters
-}
+//     // Getters and Setters
+// }

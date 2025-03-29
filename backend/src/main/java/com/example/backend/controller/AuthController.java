@@ -10,6 +10,7 @@ import com.example.backend.service.UserService;
 // import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import org.springframework.http.HttpStatus;
 // import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 // import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,10 +42,18 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Email is required");
         }
 
+        
         Optional<User> authenticatedUser = userService.getUserByEmail(email);
     
         if (authenticatedUser.isPresent()) {
             User user = authenticatedUser.get();
+
+            if (!user.isActive()) { // Ensure there is an `isActive` field in the User entity
+                System.out.println(user.isActive());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Account is inactive. Contact admin."));
+            }
+    
             
             // ✅ Store user info in the session
             session.setAttribute("user", user);
@@ -58,28 +67,7 @@ public class AuthController {
         } else {
             return ResponseEntity.status(401).body("User not registered.");
         }
-    }
-
-
-    // @GetMapping("/check-session")
-    // public ResponseEntity<?> checkSession(HttpServletRequest request) {
-    //     HttpSession session = request.getSession(false);
-        
-    //     if (session == null || session.getAttribute("user") == null) {
-    //         return ResponseEntity.status(401).body("Session expired or not found.");
-    //     }
-    //     // Retrieve user details from session
-    //     User user = (User) session.getAttribute("user");
-
-    //     Map<String, Object> response = new HashMap<>();
-    //     response.put("id", user.getId());
-    //     response.put("email", user.getEmail());
-    //     response.put("role", user.getRole());
-
-    //     return ResponseEntity.ok(response);
-    // }
-
-    
+    }    
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {

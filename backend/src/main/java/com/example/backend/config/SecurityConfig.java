@@ -29,8 +29,7 @@ public class SecurityConfig {
                     "/api/technical/**",   // Technical Events (form submission, proof upload, etc.)
                     "/api/technical/upload",   // Technical Events (form submission, proof upload, etc.)
                     "/api/technical/submit",   // Technical Events (form submission, proof upload, etc.)
-                    "/api/technical/download/${eventId}",   // Technical Events (form submission, proof upload, etc.)
-                    
+                    "/api/technical/download/**",   // Technical Events (form submission, proof upload, etc.)
                     "/api/events/**",      // General event-related APIs
                     "/api/files/upload",   // File upload (Proof documents, event media, etc.)
                     "/api/users/profile",  // User profile operations
@@ -45,7 +44,8 @@ public class SecurityConfig {
                     "/admin/**",
                     "/api/auth/users/${userId}",
                     "/api/users/**",
-                    "/api/admin/**"
+                    "/api/admin/all-students",
+                    "/api/faculty/**"
             ).permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable());

@@ -67,18 +67,27 @@ public class TechnicalEventService {
     }
 
     public Resource downloadFile(Long eventId) throws MalformedURLException {
-        Optional<TechnicalEvent> optionalEvent = technicalEventRepository.findById(eventId);
-        
-        if (optionalEvent.isPresent()) {
-            String filePath = optionalEvent.get().getDocumentPath();
-            Path path = Paths.get(filePath);
-            Resource resource = new UrlResource(path.toUri());
-
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            }
+        // Retrieve the event and check if the document exists
+        Optional<TechnicalEvent> eventOptional = technicalEventRepository.findById(eventId);
+        if (eventOptional.isEmpty()) {
+            return null;
         }
-        throw new RuntimeException("File not found or cannot be read.");
+
+        TechnicalEvent event = eventOptional.get();
+        String documentPath = event.getDocumentPath();
+        if (documentPath == null || documentPath.isEmpty()) {
+            return null;
+        }
+
+        // Load the file from local storage
+        Path filePath = Paths.get(UPLOAD_DIR).resolve(documentPath).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            return null; // File not found
+        }
+
+        return resource;
     }
 
 

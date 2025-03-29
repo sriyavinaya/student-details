@@ -18,7 +18,7 @@ const statusOptions = ['Pending', 'Rejected', 'Approved'];
 const TechnicalEventsForm = ({ event, onClose, onSave }) => {
     const { toast } = useToast();
     const [formData, setFormData] = useState({
-        eventName: '',
+        title: '',
         eventDate: '',
         host: '',
         category: '',
@@ -69,7 +69,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
             const documentLink = response.data; // Backend returns the file path
          
 
-            console.log(documentLink);
+            // console.log(documentLink);
          
 
             return documentLink;
@@ -87,7 +87,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const requiredFields = ['eventName', 'host', 'category', 'eventDate', 'description'];
+        const requiredFields = ['title', 'host', 'category', 'eventDate', 'description'];
         const missingFields = requiredFields.filter((field) => !formData[field]);
 
         if (missingFields.length > 0) {
@@ -105,13 +105,13 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
             let documentLink = await uploadProofDocument();
 
 
-            console.log(userId);
+            // console.log("This is the user id" ,userId);
 
 
             const formDataToSend = new FormData();
             formDataToSend.append('studentId', userId); // Include student ID
             formDataToSend.append('id', formData.id || '0'); // Ensure ID is sent
-            formDataToSend.append('eventName', formData.eventName);
+            formDataToSend.append('title', formData.title);
             formDataToSend.append('eventDate', formData.eventDate);
             formDataToSend.append('host', formData.host);
             formDataToSend.append('category', formData.category);
@@ -158,7 +158,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
 
     const resetForm = () => {
         setFormData({
-            eventName: '',
+            title: '',
             eventDate: '',
             host: '',
             category: '',
@@ -188,8 +188,8 @@ const TechnicalEventsForm = ({ event, onClose, onSave }) => {
                         </span>
                         <input
                             type="text"
-                            name="eventName"
-                            value={formData.eventName}
+                            name="title"
+                            value={formData.title}
                             onChange={handleChange}
                             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                         />

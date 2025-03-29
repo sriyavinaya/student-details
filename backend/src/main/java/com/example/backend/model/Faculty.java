@@ -3,6 +3,8 @@ package com.example.backend.model;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "faculty")  
 public class Faculty extends User {
@@ -14,6 +16,7 @@ public class Faculty extends User {
 
     private String phone;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)  
     private List<Student> students;
 

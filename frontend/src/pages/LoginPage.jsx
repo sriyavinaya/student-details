@@ -44,6 +44,10 @@ const LoginPage = () => {
 
           // ✅ Navigate to the correct dashboard
           navigate(getDashboardRoute(role, id));
+        }
+          // ✅ Check if response contains "inactive" error
+          else if (backendResponse.status === 403) {
+          toast.error(backendResponse.data.message || "Your account is inactive. Contact admin.");
         } else {
           toast.error(backendResponse.data.message || "Login failed.");
         }

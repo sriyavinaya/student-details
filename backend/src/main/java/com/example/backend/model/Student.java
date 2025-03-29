@@ -43,7 +43,7 @@ public class Student extends User {
     private String country;
 
     @ManyToOne
-    @JoinColumn(name = "faculty_email", referencedColumnName = "email", nullable = false)
+    @JoinColumn(name = "faculty_id", referencedColumnName = "id", nullable = false)
     private Faculty faculty;
     
     

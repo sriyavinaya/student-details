@@ -1,3 +1,41 @@
+package com.example.backend.service;
+
+import java.util.HashMap;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.backend.model.Student;
+import com.example.backend.model.User;
+import com.example.backend.repository.StudentRepository;
+import com.example.backend.repository.UserRepository;
+
+@Service
+public class AdminService {
+
+    
+    
+    @Autowired
+    private UserRepository userRepository; // Using UserRepository instead of StudentRepository
+
+    public boolean toggleUserStatus(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setActive(!user.isActive()); // Toggle status
+            userRepository.save(user);
+            return user.isActive(); // Return new status
+        }
+        throw new RuntimeException("User not found");
+    }
+
+}
+
+
+
+
+
 // package com.example.backend.service;
 
 // import com.example.backend.model.Admin;
@@ -188,3 +226,5 @@
 
 
 // }
+
+

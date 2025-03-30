@@ -93,13 +93,13 @@ public class MainService {
     @Transactional
     public List<Main> getPendingRecords(Long facultyId) {
         return mainRepository.findByFacultyIdAndVerificationStatus(
-            facultyId, "PENDING");
+            facultyId, "Pending");
     }
 
     @Transactional
     public List<Main> getRejectedRecords(Long facultyId) {
         return mainRepository.findByFacultyIdAndVerificationStatus(
-            facultyId, "REJECTED");
+            facultyId, "Rejected");
     }
 
     @Transactional
@@ -112,7 +112,7 @@ public class MainService {
         }
 
         Main record = recordOpt.get();
-        record.setVerificationStatus("APPROVED");
+        record.setVerificationStatus("Approved");
         record.setComments(comment);
         mainRepository.save(record);
         return true;
@@ -128,7 +128,7 @@ public class MainService {
         }
 
         Main record = recordOpt.get();
-        record.setVerificationStatus("REJECTED");
+        record.setVerificationStatus("Rejected");
         record.setComments(comment);
         mainRepository.save(record);
         return true;

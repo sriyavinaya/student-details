@@ -111,9 +111,9 @@ const TechnicalEventsTable = ({ events = [] }) => {  // Added default empty arra
                 <TableCell>
                   <span
                     className={`text-sm font-semibold ${
-                      event.verificationStatus === "PENDING"
+                      event.verificationStatus === "Pending"
                         ? "text-yellow-500"
-                        : event.verificationStatus === "APPROVED"
+                        : event.verificationStatus === "Approved"
                         ? "text-green-600"
                         : "text-red-600"
                     }`}
@@ -190,8 +190,8 @@ const TechnicalEventsTable = ({ events = [] }) => {  // Added default empty arra
     <div>
       <h4 className="text-sm font-medium text-gray-500">STATUS</h4>
       <p className={`font-medium ${
-        selectedEvent.verificationStatus === "PENDING" ? "text-yellow-600" :
-        selectedEvent.verificationStatus === "APPROVED" ? "text-green-600" :
+        selectedEvent.verificationStatus === "Pending" ? "text-yellow-600" :
+        selectedEvent.verificationStatus === "Approved" ? "text-green-600" :
         "text-red-600"
       }`}>
         {selectedEvent.verificationStatus}

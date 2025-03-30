@@ -231,7 +231,7 @@ public class FacultyRecordController {
 // //         this.technicalEventRepository = technicalEventRepository;
 // //     }
 
-//     // ✅ 1️⃣ Fetch all PENDING records for students under this faculty
+//     // ✅ 1️⃣ Fetch all Pending records for students under this faculty
 //     // @GetMapping("/{facultyId}/pending-records")
 //     // public ResponseEntity<List<TechnicalEvent>> getPendingRecords(@PathVariable Long facultyId) {
 //     //     List<TechnicalEvent> pendingRecords = technicalEventRepository.findByFacultyIdAndVerificationStatus(facultyId, "Pending");
@@ -266,7 +266,7 @@ public class FacultyRecordController {
 //     //     }
 //     // }
 
-//     // ✅ 4️⃣ Fetch REJECTED records for students under this faculty
+//     // ✅ 4️⃣ Fetch Rejected records for students under this faculty
 //     // @GetMapping("/{facultyId}/rejected-records")
 //     // public ResponseEntity<List<TechnicalEvent>> getRejectedRecords(@PathVariable Long facultyId) {
 //     //     List<TechnicalEvent> rejectedRecords = technicalEventRepository.findByFacultyIdAndVerificationStatus(facultyId, "Rejected");
@@ -309,7 +309,7 @@ public class FacultyRecordController {
 // //         this.technicalEventRepository = technicalEventRepository;
 // //     }
 
-// //     // ✅ 1️⃣ Fetch all PENDING records
+// //     // ✅ 1️⃣ Fetch all Pending records
 // //     @GetMapping("/pending-records")
 // //     public ResponseEntity<List<TechnicalEvent>> getPendingRecords() {
 // //         List<TechnicalEvent> pendingRecords = technicalEventRepository.findByVerificationStatus("Pending");
@@ -344,7 +344,7 @@ public class FacultyRecordController {
 // //         }
 // //     }
 
-// //     // ✅ 4️⃣ Fetch REJECTED records (for history/resubmission)
+// //     // ✅ 4️⃣ Fetch Rejected records (for history/resubmission)
 // //     @GetMapping("/rejected-records")
 // //     public ResponseEntity<List<TechnicalEvent>> getRejectedRecords() {
 // //         List<TechnicalEvent> rejectedRecords = technicalEventRepository.findByVerificationStatus("Rejected");

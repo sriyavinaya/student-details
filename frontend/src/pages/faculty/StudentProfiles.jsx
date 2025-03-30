@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import DashboardHeader from "@/components/student/StudentDashboardHeader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
+
+const ITEMS_PER_PAGE = 10;
 
 const StudentProfiles = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,6 +15,9 @@ const StudentProfiles = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const location = useLocation();
   const { id: facultyId } = useParams();
@@ -44,6 +49,16 @@ const StudentProfiles = () => {
     }
   }, [location.state]);
 
+  const handleSortClick = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1); // Reset to first page when sorting changes
+  };
+
   const handleView = (studentId) => {
     const student = students.find(s => s.id === studentId);
     setSelectedStudent(student);
@@ -56,15 +71,45 @@ const StudentProfiles = () => {
     return date.toLocaleDateString();
   };
 
+  // Filter students based on search term and status
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase())||
-      student.studentClass.toLowerCase().includes(searchTerm.toLowerCase())||
+      student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.studentClass.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.batch.toString().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "" ? true : student.active === (statusFilter === "Active");
     return matchesSearch && matchesStatus;
   });
+
+  // Sort students based on selected field and direction
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    if (!sortField) return 0;
+
+    const valueA = a[sortField] || "";
+    const valueB = b[sortField] || "";
+
+    if (sortField === "dateOfBirth") {
+      return sortDirection === "asc" 
+        ? new Date(valueA) - new Date(valueB) 
+        : new Date(valueB) - new Date(valueA);
+    }
+
+    if (typeof valueA === "string") {
+      return sortDirection === "asc" 
+        ? valueA.localeCompare(valueB) 
+        : valueB.localeCompare(valueA);
+    } else {
+      return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
+    }
+  });
+
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(sortedStudents.length / ITEMS_PER_PAGE));
+  const paginatedStudents = sortedStudents.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div>
@@ -104,11 +149,23 @@ const StudentProfiles = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100">
-              <TableHead className="font-medium">Student Name</TableHead>
-              <TableHead className="font-medium">Roll Number</TableHead>
-              <TableHead className="font-medium">Class</TableHead>
-              <TableHead className="font-medium">Batch</TableHead>
-              <TableHead className="font-medium">Active</TableHead>
+              {[
+                { label: "Student Name", field: "name" },
+                { label: "Roll Number", field: "rollNo" },
+                { label: "Class", field: "studentClass" },
+                { label: "Batch", field: "batch" },
+                { label: "Active", field: "active" }
+              ].map(({ label, field }) => (
+                <TableHead 
+                  key={field} 
+                  className="cursor-pointer" 
+                  onClick={() => handleSortClick(field)}
+                >
+                  <div className="flex items-center gap-1">
+                    {label} <ArrowUpDown size={14} className="opacity-50" />
+                  </div>
+                </TableHead>
+              ))}
               <TableHead className="font-medium">Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -119,8 +176,8 @@ const StudentProfiles = () => {
                   Loading students...
                 </TableCell>
               </TableRow>
-            ) : filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
+            ) : paginatedStudents.length > 0 ? (
+              paginatedStudents.map((student) => (
                 <TableRow key={student.id}>
                   <TableCell>{student.name}</TableCell>
                   <TableCell>{student.rollNo}</TableCell>
@@ -148,6 +205,27 @@ const StudentProfiles = () => {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-between items-center p-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-gray-600">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
 
       {/* Student Details Modal */}
@@ -246,7 +324,3 @@ const StudentProfiles = () => {
 };
 
 export default StudentProfiles;
-
-
-
-

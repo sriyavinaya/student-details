@@ -2,16 +2,20 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import DashboardHeader from "@/components/student/StudentDashboardHeader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = "http://localhost:8080/api/admin/all-faculty"; // Backend API
+const API_BASE_URL = "http://localhost:8080/api/admin/all-faculty";
+const ITEMS_PER_PAGE = 10;
 
 const FacultyProfiles = () => {
   const [faculty, setFaculty] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [selectedFaculty, setSelectedFaculty] = useState(null);
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
 
   // Fetch all faculty on component mount
@@ -22,11 +26,25 @@ const FacultyProfiles = () => {
   const fetchFaculty = async () => {
     try {
       const response = await axios.get(API_BASE_URL);
-      setFaculty(response.data); // Assuming API returns faculty array
-      console.log(response.data);
+      setFaculty(response.data);
     } catch (error) {
       console.error("Error fetching faculty:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch faculty data",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleSortClick = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1); // Reset to first page when sorting changes
   };
 
   const handleView = (faculty) => {
@@ -48,6 +66,33 @@ const FacultyProfiles = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Sort faculty based on selected field and direction
+  const sortedFaculty = [...filteredFaculty].sort((a, b) => {
+    if (!sortField) return 0;
+
+    const valueA = a[sortField] || "";
+    const valueB = b[sortField] || "";
+
+    if (typeof valueA === "string") {
+      return sortDirection === "asc" 
+        ? valueA.localeCompare(valueB) 
+        : valueB.localeCompare(valueA);
+    } else if (sortField === "active") {
+      return sortDirection === "asc" 
+        ? (a.active === b.active ? 0 : a.active ? -1 : 1)
+        : (a.active === b.active ? 0 : a.active ? 1 : -1);
+    } else {
+      return sortDirection === "asc" ? valueA - valueB : valueB - valueA;
+    }
+  });
+
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(sortedFaculty.length / ITEMS_PER_PAGE));
+  const paginatedFaculty = sortedFaculty.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const getStatusColor = (active) => {
     return active ? "text-green-600" : "text-red-600";
   };
@@ -55,7 +100,7 @@ const FacultyProfiles = () => {
   const toggleUserStatus = async (id) => {
     try {
       const response = await axios.put(`http://localhost:8080/api/admin/users/${id}/toggle-status`);
-      toast({ title: response.data }); // Show success message
+      toast({ title: response.data });
       setFaculty((prevFaculty) =>
         prevFaculty.map((fac) =>
           fac.id === id ? { ...fac, active: !fac.active } : fac
@@ -106,16 +151,28 @@ const FacultyProfiles = () => {
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100">
-              <TableHead className="font-medium">Faculty Name</TableHead>
-              <TableHead className="font-medium">Faculty Id</TableHead>
-              <TableHead className="font-medium">Department</TableHead>
-              <TableHead className="font-medium">Status</TableHead>
+              {[
+                { label: "Faculty Name", field: "name" },
+                { label: "Faculty ID", field: "faId" },
+                { label: "Department", field: "department" },
+                { label: "Status", field: "active" },
+              ].map(({ label, field }) => (
+                <TableHead 
+                  key={field} 
+                  className="cursor-pointer" 
+                  onClick={() => handleSortClick(field)}
+                >
+                  <div className="flex items-center gap-1">
+                    {label} <ArrowUpDown size={14} className="opacity-50" />
+                  </div>
+                </TableHead>
+              ))}
               <TableHead className="font-medium">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredFaculty.length > 0 ? (
-              filteredFaculty.map((faculty) => (
+            {paginatedFaculty.length > 0 ? (
+              paginatedFaculty.map((faculty) => (
                 <TableRow key={faculty.id}>
                   <TableCell>{faculty.name}</TableCell>
                   <TableCell>{faculty.faId}</TableCell>
@@ -144,6 +201,26 @@ const FacultyProfiles = () => {
         </Table>
       </div>
 
+      {/* Pagination */}
+      <div className="flex justify-between items-center p-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-gray-600">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
       {/* Faculty Details Modal */}
       {selectedFaculty && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">

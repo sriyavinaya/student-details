@@ -40,8 +40,17 @@ public class Main {
 
     private String documentPath;
 
+    private Boolean flag;
+
+    @Transient // This prevents it from being persisted
+    public String getDtype() {
+        return this.getClass().getSimpleName();
+    }
+
+
     public Main() {
         this.submissionDate = LocalDateTime.now();
         this.verificationStatus = "Pending";
+        this.flag = false;
     }
 }

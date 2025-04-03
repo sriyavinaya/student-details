@@ -61,9 +61,14 @@ public class TechnicalEventController {
         @RequestParam("category") String category,
         @RequestParam("achievement") String achievement,
         @RequestParam("description") String description,
-        @RequestParam(value = "documentPath", required = false) MultipartFile documentPath) {
+        @RequestParam("documentPath") MultipartFile documentPath) {  // Changed to required=true
 
         try {
+            // Validate document exists
+            if (documentPath == null || documentPath.isEmpty()) {
+                throw new IllegalArgumentException("Document proof is required");
+            }
+
             // 1. Get and validate student
             Student student = userRepository.findById(studentId)
                 .filter(user -> user instanceof Student)
@@ -76,30 +81,29 @@ public class TechnicalEventController {
                 throw new IllegalStateException("Student with ID " + studentId + " has no faculty assigned");
             }
 
-            // 3. Handle file upload if present
-            String documentLink = null;
-            if (documentPath != null && !documentPath.isEmpty()) {
-                documentLink = mainService.saveFile(documentPath);
+            // 3. Handle file upload (now mandatory)
+            String documentLink = mainService.saveFile(documentPath);
+            if (documentLink == null) {
+                throw new IOException("Failed to save document");
             }
 
             // 4. Create and populate TechnicalEvent
             TechnicalEvent event = new TechnicalEvent();
             event.setTitle(title);
             event.setDescription(description);
-            event.setStudent(student);  // Critical - sets student_id
-            event.setFaculty(faculty);  // Critical - sets faculty_id
+            event.setStudent(student);
+            event.setFaculty(faculty);
             event.setEventDate(eventDate);
             event.setHost(host);
             event.setCategory(category);
             event.setAchievement(achievement);
             event.setDocumentPath(documentLink);
-            event.setVerificationStatus("Pending"); // Default status
+            event.setVerificationStatus("Pending");
 
             // 5. Save and verify
             TechnicalEvent savedEvent = technicalEventRepository.save(event);
-            technicalEventRepository.flush(); // Force immediate persistence
+            technicalEventRepository.flush();
 
-            // Verify relationships were saved
             if (savedEvent.getStudent() == null || savedEvent.getFaculty() == null) {
                 throw new IllegalStateException("Failed to persist relationships");
             }
@@ -109,12 +113,9 @@ public class TechnicalEventController {
             response.put("success", true);
             response.put("message", "Technical Event submitted successfully");
             response.put("eventId", savedEvent.getId());
-            response.put("studentId", savedEvent.getStudent().getId());
-            response.put("facultyId", savedEvent.getFaculty().getId());
+            response.put("documentPath", savedEvent.getDocumentPath());
 
-            logger.info("Successfully created TechnicalEvent ID {} for student {}", 
-                savedEvent.getId(), studentId);
-
+            logger.info("TechnicalEvent created - ID: {}, Student: {}", savedEvent.getId(), studentId);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -122,26 +123,7 @@ public class TechnicalEventController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-     @GetMapping("/all")
-    public ResponseEntity<?> getAllEvents() {
-        try {
-            List<TechnicalEvent> events = technicalEventService.getAllEvents();
-            if (events.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-            }
-            return ResponseEntity.ok(events);
-        } catch (Exception e) {
-            logger.error("Failed to fetch events: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                   .body(Map.of(
-                       "error", "Failed to fetch events",
-                       "message", e.getMessage(),
-                       "timestamp", LocalDateTime.now()
-                   ));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse); // Changed to 400 for validation errors
         }
     }
 
@@ -152,14 +134,16 @@ public class TechnicalEventController {
     }
     
     @GetMapping("/student/object/{studentId}")
-    public ResponseEntity<List<TechnicalEvent>> getEventsByStudent(@PathVariable Long studentId) {
+    public ResponseEntity<List<TechnicalEvent>> getPendingAndApprovedEventsByStudent(
+        @PathVariable Long studentId) {
+        
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)
             .map(user -> (Student) user)
             .orElseThrow(() -> new IllegalArgumentException("Student not found"));
         
-        List<TechnicalEvent> events = technicalEventService.getEventsByStudent(student);
-        return new ResponseEntity<>(events, HttpStatus.OK);
+        List<TechnicalEvent> events = technicalEventService.getPendingAndApprovedEventsByStudent(student);
+        return ResponseEntity.ok(events);
     }
 
 
@@ -212,4 +196,25 @@ public class TechnicalEventController {
     //     Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
     //     return filePath.toAbsolutePath().toString();
+    // }
+
+
+
+    // @GetMapping("/all")
+    // public ResponseEntity<?> getAllEvents() {
+    //     try {
+    //         List<TechnicalEvent> events = technicalEventService.getAllEvents();
+    //         if (events.isEmpty()) {
+    //             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    //         }
+    //         return ResponseEntity.ok(events);
+    //     } catch (Exception e) {
+    //         logger.error("Failed to fetch events: {}", e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                .body(Map.of(
+    //                    "error", "Failed to fetch events",
+    //                    "message", e.getMessage(),
+    //                    "timestamp", LocalDateTime.now()
+    //                ));
+    //     }
     // }

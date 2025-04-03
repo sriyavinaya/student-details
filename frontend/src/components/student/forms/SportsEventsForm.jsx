@@ -4,15 +4,45 @@ import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 
 const categoryOptions = [
-    'Hackathon',
-    'Workshop',
-    'Competitions',
-    'Technical fest - Tathva',
-    'Technical fest of other colleges',
-    'Other',
+    'Athletics',
+    'Badminton',
+    'Basketball',
+    'Cricket',
+    'Football',
+    'Hockey',
+    'Table Tennis',
+    'Tennis',
+    'Volleyball',
+    'Other'
 ];
 
-const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
+const eventLevelOptions = [
+    'Intra-College',
+    'Inter-College',
+    'State',
+    'National',
+    'International'
+];
+
+const roleOptions = [
+    'Player',
+    'Captain',
+    'Vice-Captain',
+    'Manager',
+    'Coach',
+    'Other'
+];
+
+const outcomeOptions = [
+    'Winner',
+    'Runner-Up',
+    'Semi-Finalist',
+    'Quarter-Finalist',
+    'Participant',
+    'Other'
+];
+
+const SportsEventsForm = ({ event, onClose, onSave, refreshTable }) => {
     const { toast } = useToast();
     const [formData, setFormData] = useState({
         title: '',
@@ -20,8 +50,10 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
         host: '',
         category: '',
         achievement: '',
+        eventLevel: '',
+        role: '',
+        outcome: '',
         description: '',
-        verificationStatus: 'Pending',
         documentPath: null,
     });
     const [errors, setErrors] = useState({});
@@ -38,12 +70,11 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
     const validateDate = (dateString) => {
         if (!dateString) return false;
         
-        // Check format is YYYY-MM-DD
         const datePattern = /^\d{4}-\d{2}-\d{2}$/;
         if (!datePattern.test(dateString)) return false;
         
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset time part
+        today.setHours(0, 0, 0, 0);
         const inputDate = new Date(dateString);
         
         return inputDate <= today;
@@ -54,6 +85,9 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
         if (!formData.title.trim()) newErrors.title = 'Event name is required';
         if (!formData.host.trim()) newErrors.host = 'Host is required';
         if (!formData.category) newErrors.category = 'Category is required';
+        if (!formData.eventLevel) newErrors.eventLevel = 'Event level is required';
+        if (!formData.role) newErrors.role = 'Role is required';
+        if (!formData.outcome) newErrors.outcome = 'Outcome is required';
         if (!formData.eventDate) {
             newErrors.eventDate = 'Date is required';
         } else if (!validateDate(formData.eventDate)) {
@@ -69,7 +103,6 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -133,39 +166,26 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
 
         setIsSubmitting(true);
 
-        const requiredFields = ['title', 'host', 'category', 'eventDate', 'description'];
-        const missingFields = requiredFields.filter((field) => !formData[field]);
-
-        if (missingFields.length > 0) {
-
-            toast({
-                title: 'Missing Fields',
-                description: 'Please fill in all required fields',
-                variant: 'destructive',
-            });
-            setIsSubmitting(false);
-            return;
-        }
-
         try {
-            let documentLink = await uploadProofDocument();
+            // let documentLink = await uploadProofDocument();
 
             const formDataToSend = new FormData();
-            formDataToSend.append('studentId', userId); // Include student ID
-            formDataToSend.append('id', formData.id || '0'); // Ensure ID is sent
+            formDataToSend.append('studentId', userId);
             formDataToSend.append('title', formData.title);
             formDataToSend.append('eventDate', formData.eventDate);
             formDataToSend.append('host', formData.host);
             formDataToSend.append('category', formData.category);
             formDataToSend.append('achievement', formData.achievement);
+            formDataToSend.append('eventLevel', formData.eventLevel);
+            formDataToSend.append('role', formData.role);
+            formDataToSend.append('outcome', formData.outcome);
             formDataToSend.append('description', formData.description);
-            formDataToSend.append('verificationStatus', formData.verificationStatus);
             if (formData.documentPath) {
                 formDataToSend.append('documentPath', formData.documentPath); // File field
             }
 
             const response = await axios.post(
-                'http://localhost:8080/api/technical/submit',
+                'http://localhost:8080/api/sports/submit',
                 formDataToSend,
                 { 
                     withCredentials: true,
@@ -175,11 +195,9 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
                 }
             );
 
-            if (response.status !== 200) throw new Error('Submission failed');
-
             toast({
                 title: 'Success',
-                description: 'Record saved successfully!',
+                description: 'Sports event saved successfully!',
             });
 
             onClose();
@@ -189,7 +207,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
             console.error('Submission error:', error);
             toast({
                 title: 'Error',
-                description: error.response?.data?.message || 'Failed to save event',
+                description: error.response?.data?.message || 'Failed to save sports event',
                 variant: 'destructive',
             });
         } finally {
@@ -208,7 +226,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
     return (
         <div className="bg-gray-200 rounded-lg p-6 mb-6">
             <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label className="block">
                         <span className="text-gray-700">
                             <span className="text-red-500">*</span> Event Name
@@ -239,7 +257,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
 
                     <label className="block">
                         <span className="text-gray-700">
-                            <span className="text-red-500">*</span> Category
+                            <span className="text-red-500">*</span> Sport Category
                         </span>
                         <select
                             name="category"
@@ -247,7 +265,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
                             onChange={handleChange}
                             className={`mt-1 block w-full rounded-md border ${errors.category ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         >
-                            <option value="">Select a category</option>
+                            <option value="">Select category</option>
                             {categoryOptions.map((option) => (
                                 <option key={option} value={option}>
                                     {option}
@@ -259,6 +277,66 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
 
                     <label className="block">
                         <span className="text-gray-700">
+                            <span className="text-red-500">*</span> Event Level
+                        </span>
+                        <select
+                            name="eventLevel"
+                            value={formData.eventLevel}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full rounded-md border ${errors.eventLevel ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                        >
+                            <option value="">Select level</option>
+                            {eventLevelOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.eventLevel && <p className="mt-1 text-sm text-red-600">{errors.eventLevel}</p>}
+                    </label>
+
+                    <label className="block">
+                        <span className="text-gray-700">
+                            <span className="text-red-500">*</span> Your Role
+                        </span>
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full rounded-md border ${errors.role ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                        >
+                            <option value="">Select role</option>
+                            {roleOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
+                    </label>
+
+                    <label className="block">
+                        <span className="text-gray-700">
+                            <span className="text-red-500">*</span> Outcome
+                        </span>
+                        <select
+                            name="outcome"
+                            value={formData.outcome}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full rounded-md border ${errors.outcome ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                        >
+                            <option value="">Select outcome</option>
+                            {outcomeOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.outcome && <p className="mt-1 text-sm text-red-600">{errors.outcome}</p>}
+                    </label>
+
+                    <label className="block">
+                        <span className="text-gray-700">
                             <span className="text-red-500">*</span> Date
                         </span>
                         <input
@@ -266,7 +344,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
                             name="eventDate"
                             value={formData.eventDate}
                             onChange={handleChange}
-                            max={new Date().toISOString()} // Prevent future dates in picker
+                            max={new Date().toISOString().split('T')[0]}
                             className={`mt-1 block w-full rounded-md border ${errors.eventDate ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
                         />
                         {errors.eventDate && (
@@ -290,7 +368,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
                         {errors.achievement && <p className="mt-1 text-sm text-red-600">{errors.achievement}</p>}
                     </label>
 
-                    <label className="block">
+                    <label className="block md:col-span-2">
                         <span className="text-gray-700">
                             <span className="text-red-500">*</span> Description
                         </span>
@@ -299,12 +377,12 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
                             value={formData.description}
                             onChange={handleChange}
                             className={`mt-1 block w-full rounded-md border ${errors.description ? 'border-red-500' : 'border-gray-300'} px-3 py-2 focus:border-blue-500 focus:outline-none`}
-                            rows={3}
+                            rows={4}
                         />
                         {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
                     </label>
 
-                    <label className="block">
+                    <label className="block md:col-span-2">
                         <span className="text-gray-700">Proof Document</span>
                         <div className="mt-1 flex items-center">
                             <input
@@ -315,7 +393,7 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
                             />
                             {formData.documentPath && (
                                 <span className="ml-2 text-sm text-gray-600">
-                                    {formData.documentPath.name}
+                                    {formData.documentPath.name || 'File selected'}
                                 </span>
                             )}
                         </div>
@@ -343,4 +421,4 @@ const TechnicalEventsForm = ({ event, onClose, onSave, refreshTable }) => {
     );
 };
 
-export default TechnicalEventsForm;
+export default SportsEventsForm;

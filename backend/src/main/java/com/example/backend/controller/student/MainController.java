@@ -5,6 +5,7 @@ import com.example.backend.service.student.MainService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -31,7 +32,7 @@ public class MainController {
         return ResponseEntity.ok(event);
     }
 
-        @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
@@ -45,7 +46,7 @@ public class MainController {
         }
     }
 
-        @GetMapping("/download/{eventId}")
+    @GetMapping("/download/{eventId}")
     public ResponseEntity<Resource> downloadFile(@PathVariable Long eventId) {
         try {
             Resource file = mainService.downloadFile(eventId);
@@ -62,6 +63,34 @@ public class MainController {
             // logger.error("Error loading file for event ID: " + eventId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+     // New endpoint to fetch all pending records
+     @GetMapping("/pending")
+     public ResponseEntity<List<Main>> getAllPendingRecords() {
+         List<Main> pendingRecords = mainService.getAllByVerificationStatus("Pending");
+         return ResponseEntity.ok(pendingRecords);
+     }
+ 
+     // New endpoint to fetch all rejected records
+     @GetMapping("/rejected")
+     public ResponseEntity<List<Main>> getAllRejectedRecords() {
+         List<Main> rejectedRecords = mainService.getAllByVerificationStatus("Rejected");
+         return ResponseEntity.ok(rejectedRecords);
+     }
+
+     // New endpoint to fetch pending records for a specific student
+    @GetMapping("/student/{studentId}/pending")
+    public ResponseEntity<List<Main>> getStudentPendingRecords(@PathVariable Long studentId) {
+        List<Main> studentPendingRecords = mainService.getAllByStudentIdAndVerificationStatus(studentId, "Pending");
+        return ResponseEntity.ok(studentPendingRecords);
+    }
+    
+    // New endpoint to fetch rejected records for a specific student
+    @GetMapping("/student/{studentId}/rejected")
+    public ResponseEntity<List<Main>> getStudentRejectedRecords(@PathVariable Long studentId) {
+        List<Main> studentRejectedRecords = mainService.getAllByStudentIdAndVerificationStatus(studentId, "Rejected");
+        return ResponseEntity.ok(studentRejectedRecords);
     }
 
 }

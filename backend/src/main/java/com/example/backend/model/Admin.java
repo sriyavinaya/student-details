@@ -21,15 +21,6 @@ public class Admin extends User {
         // this.adminId = adminId;
         this.phone = phone;
     }
-// 
-    // ✅ Getters & Setters
-    // public String getAdminId() {
-    //     return adminId;
-    // }
-
-    // public void setAdminId(String adminId) {
-    //     this.adminId = adminId;
-    // }
 
     public String getPhone() {
         return phone;

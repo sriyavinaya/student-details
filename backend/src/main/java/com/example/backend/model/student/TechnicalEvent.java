@@ -27,8 +27,8 @@ public class TechnicalEvent extends Event {
 
     public TechnicalEvent(String title, String description, Student student, Faculty faculty,
                          LocalDate eventDate, String host, String category, 
-                         String achievement, String documentPath) {
-        super(title, description, student, faculty, eventDate, host, category, achievement, documentPath);
+                         String achievement, String documentPath, boolean flag){
+        super(title, description, student, faculty, eventDate, host, category, achievement, documentPath, flag);
     }
 }
 

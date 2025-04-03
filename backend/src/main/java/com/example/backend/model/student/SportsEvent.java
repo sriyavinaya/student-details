@@ -1,27 +1,39 @@
-// package com.example.backend.model.student;
+package com.example.backend.model.student;
 
-// import java.time.LocalDate;
+import java.time.LocalDate;
 
-// import jakarta.persistence.Entity;
-// import lombok.Getter;
-// import lombok.Setter;
+import com.example.backend.model.Faculty;
+import com.example.backend.model.Student;
 
-// @Getter
-// @Setter
-// @Entity
-// public class SportsEvent extends Event {
-//     private String eventLevel;
-//     private String role;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-//     public SportsEvent() {}
-
-//     public SportsEvent(String eventName, LocalDate eventDate, String host, String category, 
-//                        String achievement, String documentPath, String description, String verificationStatus,
-//                        String eventLevel, String role, Long StudentId, String comments) {
-//         super(eventName, eventDate, host, category, achievement, documentPath, description, verificationStatus, StudentId, comments);
-//         this.eventLevel = eventLevel;
-//         this.role = role;
-//     }
-
-//     // Getters and Setters
-// }
+@Getter
+@Setter
+@Entity
+@Table(name = "sports_event")
+@DiscriminatorValue("SportsEvent")
+@PrimaryKeyJoinColumn(name = "id")
+public class SportsEvent extends Event {
+    private String eventLevel;
+    private String role;
+    private String outcome;
+    
+    public SportsEvent() {
+        super();
+    }
+    
+    public SportsEvent(String title, String description, Student student, Faculty faculty,
+                       LocalDate eventDate, String host, String category, 
+                       String achievement, String documentPath, Boolean flag,
+                       String eventLevel, String role, String outcome ){
+        super(title, description, student, faculty, eventDate, host, category, achievement, documentPath, flag);
+        this.eventLevel = eventLevel;
+        this.role = role;
+        this.outcome = outcome;
+    }
+}

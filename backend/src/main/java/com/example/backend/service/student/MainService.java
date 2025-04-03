@@ -37,7 +37,7 @@ public class MainService {
         this.facultyRepository = facultyRepository;
     }
 
-    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/TechnicalEvents/";
+    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/RecordDocuments/";
 
     public Main getEventById(Long id) {
         return mainRepository.findById(id)
@@ -176,6 +176,14 @@ public class MainService {
         }
 
         return resource;
+    }
+
+    public List<Main> getAllByVerificationStatus(String verificationStatus) {
+        return mainRepository.findByVerificationStatus(verificationStatus);
+    }
+
+    public List<Main> getAllByStudentIdAndVerificationStatus(Long studentId, String status) {
+        return mainRepository.findAllByStudentIdAndVerificationStatus(studentId, status);
     }
 }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PageTemplate from "@/components/student/StudentPageTemplate";
-import TechnicalEventsTable from "@/components/student/TechnicalEventsTable";
-import TechnicalEventsForm from "@/components/student/TechnicalEventsForm";
+import TechnicalEventsTable from "@/components/student/tables/TechnicalEventsTable";
+import TechnicalEventsForm from "@/components/student/forms/TechnicalEventsForm";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Search } from "lucide-react";
 import axios from "axios";

@@ -11,8 +11,8 @@ import AdminDashboardLayout from "./components/admin/AdminDashboardLayout";
 import Dashboard from "./pages/student/Dashboard";
 import Technical from "./pages/student/Technical";
 import Cultural from "./pages/student/Cultural";
-import Sports from "./pages/student/Sports";
-import Clubs from "./pages/student/Clubs";
+import Sports from "./pages/student/SportsEvents";
+import Clubs from "./pages/student/ClubsAndSocieties";
 import Internships from "./pages/student/Internships";
 import Publications from "./pages/student/Publications";
 import RecordHistory from "./pages/student/RecordHistory";
@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import StudentProfiles from "./pages/faculty/StudentProfiles";
 import ProfileVerification from "./pages/faculty/ProfileVerification";
+import FlagRecords from "./pages/faculty/FlagRecords";
 import ExportDetails from "./pages/faculty/ExportDetails";
 
 // Admin pages
@@ -60,6 +61,7 @@ const AppRoutes = () => (
       <Route index element={<FacultyDashboard />} />
       <Route path="student-profiles" element={<StudentProfiles />} />
       <Route path="profile-verification" element={<ProfileVerification />} />
+      <Route path="flag-records" element={<FlagRecords />} />
       <Route path="export-details" element={<ExportDetails />} />
     </Route>
 

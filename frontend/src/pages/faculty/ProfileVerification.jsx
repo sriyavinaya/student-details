@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import DashboardHeader from "@/components/student/StudentDashboardHeader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, X, Download, ArrowUpDown } from "lucide-react";
+import { Search, X, Download, ArrowUpDown, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const API_BASE_URL = "http://localhost:8080/api/faculty";
@@ -15,12 +15,10 @@ const ProfileVerification = () => {
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [comment, setComment] = useState("");
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [approvalComment, setApprovalComment] = useState("");
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [showRejectCommentModal, setShowRejectCommentModal] = useState(false);
-  const [approvalComment, setApprovalComment] = useState("");
-  const [studentDetails, setStudentDetails] = useState({});
-  const [sortField, setSortField] = useState(null);
+  const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -31,6 +29,16 @@ const ProfileVerification = () => {
       fetchPendingProfiles();
     }
   }, [id]);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return isNaN(date) ? "Invalid Date" : date.toLocaleDateString("en-IN");
+    } catch {
+      return "N/A";
+    }
+  };
 
   const handleSortClick = (field) => {
     if (sortField === field) {
@@ -50,7 +58,7 @@ const ProfileVerification = () => {
             const studentResponse = await axios.get(`http://localhost:8080/api/students/${profile.student.id}`);
             return {
               ...profile,
-              studentName: `${studentResponse.data.name} `,
+              studentName: `${studentResponse.data.name}`,
               studentDetails: studentResponse.data
             };
           } catch (error) {
@@ -71,7 +79,9 @@ const ProfileVerification = () => {
 
   // Filter profiles based on search term
   const filteredProfiles = profiles.filter((profile) =>
-    profile.title.toLowerCase().includes(searchTerm.toLowerCase())
+    profile.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    profile.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (profile.student?.rollNo && profile.student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Sorting logic
@@ -80,15 +90,18 @@ const ProfileVerification = () => {
 
     let valueA, valueB;
 
-    if (sortField === "name" || sortField === "rollNo") {
-      valueA = a.studentDetails[sortField] || "";
-      valueB = b.studentDetails[sortField] || "";
+    if (sortField === "name") {
+      valueA = a.studentName || "";
+      valueB = b.studentName || "";
+    } else if (sortField === "rollNo") {
+      valueA = a.student?.rollNo || "";
+      valueB = b.student?.rollNo || "";
     } else {
       valueA = a[sortField] || "";
       valueB = b[sortField] || "";
     }
 
-    if (sortField === "eventDate") {
+    if (sortField === "eventDate" || sortField === "submissionDate") {
       return sortDirection === "asc" ? new Date(valueA) - new Date(valueB) : new Date(valueB) - new Date(valueA);
     }
 
@@ -133,7 +146,6 @@ const ProfileVerification = () => {
       });
 
       setShowCommentModal(false);
-      setShowDetailsModal(false);
       setApprovalComment("");
       setSelectedProfile(null);
     } catch (error) {
@@ -170,7 +182,6 @@ const ProfileVerification = () => {
       });
 
       setShowRejectCommentModal(false);
-      setShowDetailsModal(false);
       setComment("");
       setSelectedProfile(null);
     } catch (error) {
@@ -181,11 +192,6 @@ const ProfileVerification = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const viewProfileDetails = (profile) => {
-    setSelectedProfile(profile);
-    setShowDetailsModal(true);
   };
 
   const handleDownload = async (eventId) => {
@@ -220,7 +226,7 @@ const ProfileVerification = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
-              placeholder="Search events..."
+              placeholder="Search by title, name or roll no..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -235,11 +241,11 @@ const ProfileVerification = () => {
             <TableRow className="bg-gray-100">
               {[
                 { label: "Student Name", field: "name" },
-                { label: "Student RollNo", field: "rollNo" },
+                { label: "Roll No", field: "rollNo" },
+                { label: "Submission Date", field: "submissionDate" },
                 { label: "Title", field: "title" },
-                { label: "Category", field: "category" },
-                { label: "Event Date", field: "eventDate" },
-                { label: "Status", field: "verificationStatus" }
+                { label: "Type", field: "dtype" },
+                // { label: "Status", field: "verificationStatus" }
               ].map(({ label, field }) => (
                 <TableHead key={field} className="cursor-pointer" onClick={() => handleSortClick(field)}>
                   <div className="flex items-center gap-1">
@@ -247,7 +253,7 @@ const ProfileVerification = () => {
                   </div>
                 </TableHead>
               ))}
-              <TableHead className="font-medium">Actions</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,10 +262,10 @@ const ProfileVerification = () => {
                 <TableRow key={profile.id}>
                   <TableCell>{profile.studentName}</TableCell>
                   <TableCell>{profile.student?.rollNo || 'N/A'}</TableCell>
+                  <TableCell>{formatDate(profile.submissionDate)}</TableCell>
                   <TableCell>{profile.title}</TableCell>
-                  <TableCell>{profile.category}</TableCell>
-                  <TableCell>{profile.eventDate}</TableCell>
-                  <TableCell>
+                  <TableCell>{profile.dtype || "N/A"}</TableCell>
+                  {/* <TableCell>
                     <span className={`text-sm font-semibold ${
                       profile.verificationStatus === 'Approved' ? 'text-green-600' :
                       profile.verificationStatus === 'Rejected' ? 'text-red-600' :
@@ -267,14 +273,25 @@ const ProfileVerification = () => {
                     }`}>
                       {profile.verificationStatus}
                     </span>
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
-                    <button
-                      onClick={() => viewProfileDetails(profile)}
-                      className="p-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-1 px-3 rounded text-sm"
-                    >
-                      VIEW
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        className="px-2 py-1 bg-blue-100 font-medium text-blue-600 rounded hover:bg-blue-400 text-sm"
+                        onClick={() => setSelectedProfile(profile)}
+                      >
+                        VIEW
+                      </button>
+                      {profile.verificationStatus === "Rejected" && (
+                        <button
+                          className="p-1 text-green-600 hover:text-green-800"
+                          onClick={() => handleApprove(profile.id)}
+                          title="Resubmit"
+                        >
+                          <RefreshCw size={18} />
+                        </button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -287,103 +304,140 @@ const ProfileVerification = () => {
             )}
           </TableBody>
         </Table>
+
+        {/* Pagination */}
+        <div className="flex justify-between items-center p-4">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center p-4">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-gray-600">
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-
-       {/* Profile Details Modal */}
-       {showDetailsModal && selectedProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      {/* Record Details Modal - Using the RecordHistoryTable modal pattern */}
+      {selectedProfile && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-medium text-gray-800">Record Details</h3>
               <button 
-                onClick={() => setShowDetailsModal(false)}
+                onClick={() => setSelectedProfile(null)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <X size={20} />
+                ✕
               </button>
             </div>
-
+            
             <div className="space-y-6">
-              {/* Student Information Section */}
+              {/* Common Fields - Always show these */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-blue-50 p-4 rounded-lg">
-                <div>
+              <div>
                   <h4 className="text-sm font-medium text-gray-500">STUDENT NAME</h4>
                   <p className="font-medium text-gray-900">{selectedProfile.studentName}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">STUDENT ROLL NO.</h4>
+                  <h4 className="text-sm font-medium text-gray-500">ROLL NO</h4>
                   <p className="font-medium text-gray-900">{selectedProfile.student?.rollNo || 'N/A'}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">STUDENT EMAIL</h4>
-                  <p className="font-medium text-gray-900">{selectedProfile.studentDetails?.email || 'N/A'}</p>
+                  <h4 className="text-sm font-medium text-gray-500">CLASS</h4>
+                  <p className="font-medium text-gray-900">{selectedProfile.studentDetails?.studentClass|| 'N/A'}</p>
                 </div>
               </div>
 
-              {/* Event Information Section */}
+              {/* Student Information Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-100 p-4 rounded-lg">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">EVENT TITLE</h4>
+              <div>
+                  <h4 className="text-sm font-medium text-gray-500">TITLE</h4>
                   <p className="font-medium text-gray-900">{selectedProfile.title}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">CATEGORY</h4>
-                  <p className="font-medium text-gray-900">{selectedProfile.category}</p>
+                  <h4 className="text-sm font-medium text-gray-500">TYPE</h4>
+                  <p className="font-medium text-gray-900">{selectedProfile.dtype?.replace("Event", " Event") || "N/A"}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">STATUS</h4>
-                  <p className="font-medium text-gray-900">{selectedProfile.verificationStatus}</p>
-                </div>
-              </div>
-
-              {/* More Details Section */}
-              <div className="space-y-4 bg-white p-4 rounded-lg border border-gray-200">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">DEPARTMENT</h4>
-                    <p className="font-medium text-gray-900">{selectedProfile.studentDetails?.department || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-500">EVENT DATE</h4>
-                    <p className="font-medium text-gray-900">{selectedProfile.eventDate}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">ACHIEVEMENT</h4>
-                  <p className="font-medium text-gray-900">{selectedProfile.achievement}</p>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500">FACULTY COMMENTS</h4>
-                  <p className="font-medium text-gray-900">
-                    {selectedProfile.comment || "No comments available"}
+                  <p className={`font-medium ${
+                    selectedProfile.verificationStatus === "Pending" ? "text-yellow-600" :
+                    selectedProfile.verificationStatus === "Approved" ? "text-green-600" :
+                    "text-red-600"
+                  }`}>
+                    {selectedProfile.verificationStatus}
                   </p>
                 </div>
               </div>
 
-              {/* Document Download Section */}
+              <div className="space-y-4 bg-white p-4 rounded-lg border border-gray-200">
+                {/* Dynamic Fields - Only show non-null ones */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(selectedProfile).map(([key, value]) => {
+                    // Skip these fields as they're either shown elsewhere or internal
+                    const skipFields = ['id', 'title', 'verificationStatus', 'documentPath', 'dtype', 
+                                        'student', 'faculty', 'flag', 'comments', 'description', 'comment',
+                                        'studentName', 'studentDetails', 'achievement'];
+                    
+                    if (skipFields.includes(key) || value === null || value === undefined || value === '') {
+                      return null;
+                    }
+                    
+                    // Format date fields
+                    const isDateField = key.toLowerCase().includes('date');
+                    const displayValue = isDateField ? formatDate(value) : value;
+                    
+                    // Format field name for display
+                    const displayKey = key
+                      .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+                      .replace(/(^|_)([a-z])/g, (m, p1, p2) => p2.toUpperCase()) // Capitalize first letter
+                      .trim();
+                    
+                    return (
+                      <div key={key}>
+                        <h4 className="text-sm font-medium text-gray-500">{displayKey.toUpperCase()}</h4>
+                        <p className="font-medium text-gray-900">{displayValue}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Always show description if available */}
+                {selectedProfile.description && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">DESCRIPTION</h4>
+                    <p className="font-medium text-gray-900">{selectedProfile.description}</p>
+                  </div>
+                )}
+
+                {/* Always show achievement if available */}
+                {selectedProfile.achievement && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-500">ACHIEVEMENT</h4>
+                    <p className="font-medium text-gray-900">{selectedProfile.achievement}</p>
+                  </div>
+                )}
+
+                {/* Always show comments if available */}
+                {/* <div>
+                  <h4 className="text-sm font-medium text-gray-500">FACULTY COMMENTS</h4>
+                  <p className="font-medium text-gray-900">
+                    {selectedProfile.comment || selectedProfile.comments || "No comments available"}
+                  </p>
+                </div> */}
+              </div>
+
+              {/* Document download section */}
               {selectedProfile.documentPath && (
                 <div className="p-4 rounded-lg border border-blue-50 bg-blue-50">
                   <h4 className="text-sm font-medium text-blue-800 mb-2">PROOF DOCUMENT</h4>
@@ -397,21 +451,23 @@ const ProfileVerification = () => {
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={() => handleApprove(selectedProfile.id)}
-                  className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded-md"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => handleReject(selectedProfile.id)}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded-md"
-                >
-                  Reject
-                </button>
-              </div>
+              {/* Action Buttons - Only show for pending profiles */}
+              {selectedProfile.verificationStatus === "Pending" && (
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => handleApprove(selectedProfile.id)}
+                    className="px-4 py-2 bg-green-500 hover:bg-green-700 text-white rounded-md"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleReject(selectedProfile.id)}
+                    className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded-md"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

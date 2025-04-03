@@ -50,6 +50,10 @@ public interface MainRepository extends JpaRepository<Main, Long> {
         String verificationStatus);
 
    List<Main> findByFacultyIdAndVerificationStatus(Long facultyId, String verificationStatus);
+
+   List<Main> findByVerificationStatus(String verificationStatus);
+
+   List<Main> findAllByStudentIdAndVerificationStatus(Long studentId, String status);
   
 }
 

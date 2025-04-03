@@ -23,8 +23,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",        // Authentication (Google OAuth, Login, Logout)
-                    "/api/dashboard/**",    // Student operations
-                    "/api/faculty/**",     // Faculty operations
+                    "/api/dashboard/**",   
                     "/api/admin/**",       // Admin operations
                     "/api/technical/**",   // Technical Events (form submission, proof upload, etc.)
                     "/api/technical/all",   // Technical Events (form submission, proof upload, etc.)
@@ -41,12 +40,17 @@ public class SecurityConfig {
                     "/v3/api-docs/**", "/swagger-ui/**",
                     "/login/oauth2/code/google",
                     "/api/auth/google-login",
-                    "/api/auth/users/${userId}",
                     "/api/users/**",
                     "/api/admin/all-students",
                     "/api/faculty/**",
                     "/api/students/**",
-                    "/api/main/**"
+                    "/api/main/**",
+                    "/api/sports/**",
+                    "/api/clubs/**",
+                    "/api/cultural/**",
+                    "/api/publications/**",
+                    "/api/dropdown/**",
+                    "/favicon.ico."
             ).permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable());

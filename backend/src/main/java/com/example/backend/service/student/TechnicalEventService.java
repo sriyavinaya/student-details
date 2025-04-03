@@ -3,23 +3,15 @@ package com.example.backend.service.student;
 import com.example.backend.model.Student;
 import com.example.backend.model.student.TechnicalEvent;
 import com.example.backend.repository.student.TechnicalEventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
 
 @Service
 @Transactional
@@ -53,6 +45,13 @@ public class TechnicalEventService {
     public List<TechnicalEvent> getEventsByStudentId(Long studentId) {
         return technicalEventRepository.findByStudent_Id(studentId);
     }
+
+    @Transactional
+    public List<TechnicalEvent> getPendingAndApprovedEventsByStudent(Student student) {
+        return technicalEventRepository.findPendingAndApprovedByStudent(student);
+    }
+
+     
 
 
 }

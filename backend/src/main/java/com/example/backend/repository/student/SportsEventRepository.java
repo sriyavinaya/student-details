@@ -21,4 +21,10 @@ public interface SportsEventRepository extends JpaRepository<SportsEvent, Long> 
     
     @Query("SELECT s FROM SportsEvent s WHERE s.student = :student AND s.flag = :flag")
     List<SportsEvent> findByStudentAndFlag(@Param("student") Student student, @Param("flag") Boolean flag);
+
+    //Find approved and pending events of a student
+    @Query("SELECT se FROM SportsEvent se " +
+          "WHERE se.student = :student " +
+          "AND se.verificationStatus IN ('Pending', 'Approved')")
+    List<SportsEvent> findPendingAndApprovedByStudent(@Param("student") Student student);
 }

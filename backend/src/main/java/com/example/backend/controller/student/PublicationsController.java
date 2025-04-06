@@ -45,8 +45,8 @@ public class PublicationsController {
             @RequestParam("publicationType") String publicationType,
             @RequestParam("orcidId") String orcidId,
             @RequestParam("author") String author,
-            @RequestParam("year") int year,
-            @RequestParam("collaborators") String collaborators,
+            @RequestParam("year") Integer year,
+            // @RequestParam("collaborators") String collaborators,
             @RequestParam("doi") String doi,
             @RequestParam("keywords") String keywords,
             @RequestParam("abstractContent") String abstractContent,
@@ -78,7 +78,7 @@ public class PublicationsController {
             publication.setOrcidId(orcidId);
             publication.setAuthor(author);
             publication.setYear(year);
-            publication.setCollaborators(collaborators);
+            // publication.setCollaborators(collaborators);
             publication.setDoi(doi);
             publication.setKeywords(keywords);
             publication.setAbstractContent(abstractContent);
@@ -115,13 +115,13 @@ public class PublicationsController {
     }
 
     @GetMapping("/student/object/{studentId}")
-    public ResponseEntity<List<Publications>> getByStudentObject(@PathVariable Long studentId) {
+    public ResponseEntity<List<Publications>> getPendingAndApprovedEventsByStudent(@PathVariable Long studentId) {
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)
             .map(user -> (Student) user)
             .orElseThrow(() -> new IllegalArgumentException("Student not found"));
         
-        List<Publications> publications = publicationsService.getByStudent(student);
+        List<Publications> publications = publicationsService.getPendingAndApprovedEventsByStudent(student);
         return new ResponseEntity<>(publications, HttpStatus.OK);
     }
 }

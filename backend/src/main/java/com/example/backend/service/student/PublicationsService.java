@@ -35,7 +35,8 @@ public class PublicationsService {
         return publicationsRepository.findByStudent_Id(studentId);
     }
 
-    public List<Publications> getByVerificationStatus(Boolean flag) {
-        return publicationsRepository.findByFlag(flag);
+    @Transactional
+    public List<Publications> getPendingAndApprovedEventsByStudent(Student student) {
+        return publicationsRepository.findPendingAndApprovedByStudent(student);
     }
 }

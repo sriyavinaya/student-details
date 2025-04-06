@@ -1,189 +1,150 @@
-// package com.example.backend.controller.student;
+package com.example.backend.controller.student;
 
-// import com.example.backend.model.Student;
-// import com.example.backend.model.Faculty;
-// import com.example.backend.model.student.*;
-// import com.example.backend.repository.UserRepository;
-// import com.example.backend.service.student.JobOpportunityService;
-// import com.example.backend.service.student.MainService;
+import com.example.backend.model.Student;
+import com.example.backend.model.Faculty;
+import com.example.backend.model.student.JobOpportunity;
+import com.example.backend.model.student.JobOpportunity.JobType;
+import com.example.backend.repository.UserRepository;
+import com.example.backend.service.student.JobOpportunityService;
+import com.example.backend.service.student.MainService;
 
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
-// import org.springframework.format.annotation.DateTimeFormat;
-// import org.springframework.http.HttpStatus;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.*;
-// import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-// import java.time.LocalDate;
-// import java.util.HashMap;
-// import java.util.List;
-// import java.util.Map;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-// @RestController
-// @CrossOrigin(origins = "http://localhost:5173")
-// @RequestMapping("/api/job-opportunities")
-// public class JobOpportunityController {
+@RestController
+@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/api/job-opportunity")
+public class JobOpportunityController {
 
-//     private final Logger logger = LoggerFactory.getLogger(JobOpportunityController.class);
+    private final Logger logger = LoggerFactory.getLogger(JobOpportunityController.class);
 
-//     private final JobOpportunityService jobOpportunityService;
-//     private final UserRepository userRepository;
-//     private final MainService mainService;
+    @Autowired
+    private JobOpportunityService jobOpportunityService;
 
-//     public JobOpportunityController(JobOpportunityService jobOpportunityService,
-//                                   UserRepository userRepository,
-//                                   MainService mainService) {
-//         this.jobOpportunityService = jobOpportunityService;
-//         this.userRepository = userRepository;
-//         this.mainService = mainService;
-//     }
+    @Autowired
+    private UserRepository userRepository;
 
-//     @PostMapping(value = "/internship/submit", consumes = {"multipart/form-data"})
-//     public ResponseEntity<Map<String, Object>> submitInternship(
-//             @RequestParam("studentId") Long studentId,
-//             @RequestParam("title") String title,
-//             @RequestParam("companyName") String companyName,
-//             @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-//             @RequestParam("role") String role,
-//             @RequestParam("duration") String duration,
-//             @RequestParam("stipend") String stipend,
-//             @RequestParam("description") String description,
-//             @RequestParam(value = "documentPath", required = false) MultipartFile documentPath) {
+    @Autowired
+    private MainService mainService;
 
-//         try {
-//             Student student = userRepository.findById(studentId)
-//                     .filter(user -> user instanceof Student)
-//                     .map(user -> (Student) user)
-//                     .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
+    @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @Transactional
+    public ResponseEntity<Map<String, Object>> submitJobOpportunity(
+        @RequestParam("studentId") Long studentId,
+        @RequestParam("title") String title,
+        @RequestParam("description") String description,
+        @RequestParam("companyName") String companyName,
+        @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+        @RequestParam("role") String role,
+        @RequestParam("type") JobType type,
+        @RequestParam("documentPath") MultipartFile documentPath,
+        @RequestParam(value = "duration", required = false) String duration,
+        @RequestParam(value = "stipend", required = false) String stipend,
+        @RequestParam(value = "ctc", required = false) String ctc) {
 
-//             Faculty faculty = student.getFaculty();
-//             if (faculty == null) {
-//                 throw new IllegalStateException("Student has no faculty assigned");
-//             }
+        try {
+            // Validate document exists
+            if (documentPath == null || documentPath.isEmpty()) {
+                throw new IllegalArgumentException("Document proof is required");
+            }
 
-//             String documentLink = null;
-//             if (documentPath != null && !documentPath.isEmpty()) {
-//                 documentLink = mainService.saveFile(documentPath);
-//             }
+            // 1. Get and validate student
+            Student student = userRepository.findById(studentId)
+                .filter(user -> user instanceof Student)
+                .map(user -> (Student) user)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
 
-//             Internship internship = new Internship();
-//             internship.setTitle(title);
-//             internship.setDescription(description);
-//             internship.setStudent(student);
-//             internship.setFaculty(faculty);
-//             internship.setCompanyName(companyName);
-//             internship.setStartDate(startDate);
-//             internship.setRole(role);
-//             internship.setDuration(duration);
-//             internship.setStipend(stipend);
-//             internship.setDocumentPath(documentLink);
+            // 2. Get faculty from student (must exist)
+            Faculty faculty = student.getFaculty();
+            if (faculty == null) {
+                throw new IllegalStateException("Student with ID " + studentId + " has no faculty assigned");
+            }
 
-//             Internship savedInternship = (Internship) jobOpportunityService.saveJobOpportunity(internship);
+            // 3. Handle file upload (now mandatory)
+            String documentLink = mainService.saveFile(documentPath);
+            if (documentLink == null) {
+                throw new IOException("Failed to save document");
+            }
 
-//             Map<String, Object> response = new HashMap<>();
-//             response.put("success", true);
-//             response.put("message", "Internship submitted successfully");
-//             response.put("id", savedInternship.getId());
-//             response.put("type", "INTERNSHIP");
-//             return ResponseEntity.ok(response);
+            // 4. Create and populate JobOpportunity based on type
+            JobOpportunity opportunity = new JobOpportunity();
+            opportunity.setTitle(title);
+            opportunity.setDescription(description);
+            opportunity.setStudent(student);
+            opportunity.setFaculty(faculty);
+            opportunity.setCompanyName(companyName);
+            opportunity.setStartDate(startDate);
+            opportunity.setRole(role);
+            opportunity.setType(type);
+            opportunity.setDocumentPath(documentLink);
+            opportunity.setVerificationStatus("Pending");
 
-//         } catch (Exception e) {
-//             logger.error("Error submitting internship", e);
-//             Map<String, Object> errorResponse = new HashMap<>();
-//             errorResponse.put("success", false);
-//             errorResponse.put("message", e.getMessage());
-//             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-//         }
-//     }
+            // Set type-specific fields
+            if (type == JobType.INTERNSHIP) {
+                opportunity.setDuration(duration);
+                opportunity.setStipend(stipend);
+            } else if (type == JobType.PLACEMENT) {
+                opportunity.setCtc(ctc);
+            }
 
-//     @PostMapping(value = "/placement/submit", consumes = {"multipart/form-data"})
-//     public ResponseEntity<Map<String, Object>> submitPlacement(
-//             @RequestParam("studentId") Long studentId,
-//             @RequestParam("title") String title,
-//             @RequestParam("companyName") String companyName,
-//             @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-//             @RequestParam("role") String role,
-//             @RequestParam("ctc") String ctc,
-//             @RequestParam("description") String description,
-//             @RequestParam(value = "documentPath", required = false) MultipartFile documentPath) {
+            // 5. Save and verify
+            JobOpportunity savedOpportunity = jobOpportunityService.saveJobOpportunity(opportunity);
 
-//         try {
-//             Student student = userRepository.findById(studentId)
-//                     .filter(user -> user instanceof Student)
-//                     .map(user -> (Student) user)
-//                     .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
+            // 6. Return success response
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Job Opportunity submitted successfully");
+            response.put("opportunityId", savedOpportunity.getId());
+            response.put("documentPath", savedOpportunity.getDocumentPath());
 
-//             Faculty faculty = student.getFaculty();
-//             if (faculty == null) {
-//                 throw new IllegalStateException("Student has no faculty assigned");
-//             }
+            logger.info("JobOpportunity created - ID: {}, Student: {}", savedOpportunity.getId(), studentId);
+            return ResponseEntity.ok(response);
 
-//             String documentLink = null;
-//             if (documentPath != null && !documentPath.isEmpty()) {
-//                 documentLink = mainService.saveFile(documentPath);
-//             }
+        } catch (Exception e) {
+            logger.error("Error submitting job opportunity", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
 
-//             Placement placement = new Placement();
-//             placement.setTitle(title);
-//             placement.setDescription(description);
-//             placement.setStudent(student);
-//             placement.setFaculty(faculty);
-//             placement.setCompanyName(companyName);
-//             placement.setStartDate(startDate);
-//             placement.setRole(role);
-//             placement.setCtc(ctc);
-//             placement.setDocumentPath(documentLink);
-
-//             Placement savedPlacement = (Placement) jobOpportunityService.saveJobOpportunity(placement);
-
-//             Map<String, Object> response = new HashMap<>();
-//             response.put("success", true);
-//             response.put("message", "Placement submitted successfully");
-//             response.put("id", savedPlacement.getId());
-//             response.put("type", "PLACEMENT");
-//             return ResponseEntity.ok(response);
-
-//         } catch (Exception e) {
-//             logger.error("Error submitting placement", e);
-//             Map<String, Object> errorResponse = new HashMap<>();
-//             errorResponse.put("success", false);
-//             errorResponse.put("message", e.getMessage());
-//             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-//         }
-//     }
-
-//     @GetMapping("/all")
-//     public ResponseEntity<List<JobOpportunity>> getAllJobOpportunities() {
-//         List<JobOpportunity> opportunities = jobOpportunityService.getAllJobOpportunities();
-//         return ResponseEntity.ok(opportunities);
-//     }
-
-//     @GetMapping("/student/{studentId}")
-//     public ResponseEntity<List<JobOpportunity>> getByStudentId(@PathVariable Long studentId) {
-//         List<JobOpportunity> opportunities = jobOpportunityService.getByStudentId(studentId);
-//         return ResponseEntity.ok(opportunities);
-//     }
-
-//     @GetMapping("/student/{studentId}/internships")
-//     public ResponseEntity<List<JobOpportunity>> getInternshipsByStudentId(@PathVariable Long studentId) {
-//         Student student = userRepository.findById(studentId)
-//                 .filter(user -> user instanceof Student)
-//                 .map(user -> (Student) user)
-//                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<JobOpportunity>> getOpportunitiesByStudentId(@PathVariable Long studentId) {
+        List<JobOpportunity> opportunities = jobOpportunityService.getOpportunitiesByStudentId(studentId);
+        return new ResponseEntity<>(opportunities, HttpStatus.OK);
+    }
+    
+    @GetMapping("/student/object/{studentId}")
+    public ResponseEntity<List<JobOpportunity>> getPendingAndApprovedOpportunitiesByStudent(
+        @PathVariable Long studentId) {
         
-//         List<JobOpportunity> internships = jobOpportunityService.getInternshipsByStudent(student);
-//         return ResponseEntity.ok(internships);
-//     }
-
-//     @GetMapping("/student/{studentId}/placements")
-//     public ResponseEntity<List<JobOpportunity>> getPlacementsByStudentId(@PathVariable Long studentId) {
-//         Student student = userRepository.findById(studentId)
-//                 .filter(user -> user instanceof Student)
-//                 .map(user -> (Student) user)
-//                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+        Student student = userRepository.findById(studentId)
+            .filter(user -> user instanceof Student)
+            .map(user -> (Student) user)
+            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
         
-//         List<JobOpportunity> placements = jobOpportunityService.getPlacementsByStudent(student);
-//         return ResponseEntity.ok(placements);
-//     }
-// }
+        List<JobOpportunity> opportunities = jobOpportunityService.getPendingAndApprovedOpportunitiesByStudent(student);
+        return ResponseEntity.ok(opportunities);
+    }
+
+    @GetMapping("/type/{type}")
+    public ResponseEntity<List<JobOpportunity>> getOpportunitiesByType(@PathVariable JobType type) {
+        List<JobOpportunity> opportunities = jobOpportunityService.getOpportunitiesByType(type);
+        return ResponseEntity.ok(opportunities);
+    }
+}

@@ -35,7 +35,8 @@ public class SportsEventService {
         return sportsEventRepository.findByStudent_Id(studentId);
     }
 
-    public List<SportsEvent> getByVerificationStatus(Boolean flag) {
-        return sportsEventRepository.findByFlag(flag);
+    @Transactional
+    public List<SportsEvent> getPendingAndApprovedEventsByStudent(Student student) {
+        return sportsEventRepository.findPendingAndApprovedByStudent(student);
     }
 }

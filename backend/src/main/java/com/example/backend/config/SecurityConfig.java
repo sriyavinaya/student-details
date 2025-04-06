@@ -50,7 +50,9 @@ public class SecurityConfig {
                     "/api/cultural/**",
                     "/api/publications/**",
                     "/api/dropdown/**",
-                    "/favicon.ico."
+                    "/api/job-opportunity/**",
+                    "/api/flagged/**",
+                    "/api/faculty-publications/**"
             ).permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable());

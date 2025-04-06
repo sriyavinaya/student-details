@@ -21,4 +21,10 @@ public interface CulturalEventRepository extends JpaRepository<CulturalEvent, Lo
     
     @Query("SELECT c FROM CulturalEvent c WHERE c.student = :student AND c.flag = :flag")
     List<CulturalEvent> findByStudentAndFlag(@Param("student") Student student, @Param("flag") Boolean flag);
+
+    //Find approved and pending events of a student
+    @Query("SELECT ce FROM CulturalEvent ce " +
+          "WHERE ce.student = :student " +
+          "AND ce.verificationStatus IN ('Pending', 'Approved')")
+    List<CulturalEvent> findPendingAndApprovedByStudent(@Param("student") Student student);
 }

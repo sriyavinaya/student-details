@@ -4,6 +4,8 @@ import DashboardHeader from "@/components/student/StudentDashboardHeader";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Filter, X, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import PageTemplate from "@/components/student/StudentPageTemplate";
+
 
 const API_BASE_URL = "http://localhost:8080/api/admin/all-students";
 const ITEMS_PER_PAGE = 10;
@@ -115,8 +117,8 @@ const StudentProfiles = () => {
   };
 
   return (
-    <div>
-      <DashboardHeader title="Student Profiles" />
+    <PageTemplate title="Student Profiles">
+
       
       <div className="mb-6 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -329,7 +331,7 @@ const StudentProfiles = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageTemplate>
   );
 };
 

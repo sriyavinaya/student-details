@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import DashboardHeader from "@/components/student/StudentDashboardHeader";
+import PageTemplate from "@/components/student/StudentPageTemplate";
 
 const StatCard = ({ title, count, color, onClick }) => {
   return (
@@ -11,7 +11,7 @@ const StatCard = ({ title, count, color, onClick }) => {
       {/* Foreground Card */}
       <div className="relative bg-white rounded-lg shadow-lg p-6 text-center border border-gray-200">
         {/* Colored Header */}
-        <div className={`w-full h-2 rounded-t-lg ${color}`}></div>
+        {/* <div className={`w-full h-2 rounded-t-lg ${color}`}></div> */}
 
         <h3 className="text-gray-700 font-medium text-lg mt-3">{title}</h3>
         <p className="text-5xl font-extrabold text-gray-800 my-2">{count ?? "..."}</p>
@@ -44,8 +44,8 @@ const AdminDashboard = () => {
   }, [id]);
 
   return (
-    <div>
-      <DashboardHeader title="Admin Dashboard" />
+      <PageTemplate title="Admin Dashboard">
+    
       
       {isLoading ? (
         <div className="animate-pulse space-y-4">
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageTemplate>
   );
 };
 

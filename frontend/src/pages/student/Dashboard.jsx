@@ -1,11 +1,12 @@
-import DashboardHeader from "@/components/student/StudentDashboardHeader";
+import PageTemplate from "@/components/student/StudentPageTemplate";
 import StudentProfile from "@/components/student/StudentProfile";
 
 const Dashboard = () => {
   return (
     <div>
-      <DashboardHeader title="Student Dashboard" />
+      <PageTemplate title="Student Dashboard">
       <StudentProfile />
+      </PageTemplate>
     </div>
   );
 };

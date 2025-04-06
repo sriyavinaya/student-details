@@ -13,7 +13,7 @@ import Technical from "./pages/student/Technical";
 import Cultural from "./pages/student/Cultural";
 import Sports from "./pages/student/SportsEvents";
 import Clubs from "./pages/student/ClubsAndSocieties";
-import Internships from "./pages/student/Internships";
+import JobOpportunity from "./pages/student/JobOpportunity";
 import Publications from "./pages/student/Publications";
 import RecordHistory from "./pages/student/RecordHistory";
 import Export from "./pages/student/Export";
@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import StudentProfiles from "./pages/faculty/StudentProfiles";
 import ProfileVerification from "./pages/faculty/ProfileVerification";
+import FacultyPublications from "./pages/faculty/FacultyPublications";
 import FlagRecords from "./pages/faculty/FlagRecords";
 import ExportDetails from "./pages/faculty/ExportDetails";
 
@@ -50,7 +51,7 @@ const AppRoutes = () => (
       <Route path="cultural" element={<Cultural />} />
       <Route path="sports" element={<Sports />} />
       <Route path="clubs" element={<Clubs />} />
-      <Route path="internships" element={<Internships />} />
+      <Route path="job" element={<JobOpportunity />} />
       <Route path="publications" element={<Publications />} />
       <Route path="history" element={<RecordHistory />} />
       <Route path="export" element={<Export />} />
@@ -61,6 +62,7 @@ const AppRoutes = () => (
       <Route index element={<FacultyDashboard />} />
       <Route path="student-profiles" element={<StudentProfiles />} />
       <Route path="profile-verification" element={<ProfileVerification />} />
+      <Route path="faculty-publications" element={<FacultyPublications />} />
       <Route path="flag-records" element={<FlagRecords />} />
       <Route path="export-details" element={<ExportDetails />} />
     </Route>
@@ -116,7 +118,7 @@ export default App;
 // import Cultural from "./pages/student/Cultural";
 // import Sports from "./pages/student/Sports";
 // import Clubs from "./pages/student/Clubs";
-// import Internships from "./pages/student/Internships";
+// import JobOpportunity from "./pages/student/JobOpportunity";
 // import Publications from "./pages/student/Publications";
 // import RecordHistory from "./pages/student/RecordHistory";
 // import Export from "./pages/student/Export";
@@ -152,7 +154,7 @@ export default App;
 //       <Route path="cultural" element={<Cultural />} />
 //       <Route path="sports" element={<Sports />} />
 //       <Route path="clubs" element={<Clubs />} />
-//       <Route path="internships" element={<Internships />} />
+//       <Route path="internships" element={<JobOpportunity />} />
 //       <Route path="publications" element={<Publications />} />
 //       <Route path="history" element={<RecordHistory />} />
 //       <Route path="export" element={<Export />} />

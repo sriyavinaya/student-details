@@ -21,4 +21,14 @@ public interface PublicationsRepository extends JpaRepository<Publications, Long
     
     @Query("SELECT p FROM Publications p WHERE p.student = :student AND p.flag = :flag")
     List<Publications> findByStudentAndFlag(@Param("student") Student student, @Param("flag") Boolean flag);
+
+    //Find approved and pending events of a student
+    @Query("SELECT pu FROM Publications pu " +
+          "WHERE pu.student = :student " +
+          "AND pu.verificationStatus IN ('Pending', 'Approved')")
+    List<Publications> findPendingAndApprovedByStudent(@Param("student") Student student);
+
+
+
+    
 }

@@ -26,6 +26,7 @@ public interface TechnicalEventRepository extends JpaRepository<TechnicalEvent, 
     @Query("SELECT t FROM TechnicalEvent t WHERE t.student = :student AND t.verificationStatus = 'Pending'")
     List<TechnicalEvent> findPendingByStudent(@Param("student") Student student);
 
+    //Find approved and pending events of a student
     @Query("SELECT te FROM TechnicalEvent te " +
           "WHERE te.student = :student " +
           "AND te.verificationStatus IN ('Pending', 'Approved')")

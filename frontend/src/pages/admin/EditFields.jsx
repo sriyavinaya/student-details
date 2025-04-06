@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash } from "lucide-react";
+import PageTemplate from "@/components/student/StudentPageTemplate";
 
 const EditFields = () => {
   const [category, setCategory] = useState("technical");
@@ -14,15 +15,10 @@ const EditFields = () => {
   const fieldOptions = {
     technical: ["Category", "Achievement"],
     cultural: ["Category", "Achievement"],
-    sports: ["Category", "Achievement"],
-    technical: ["Category", "Achievement"],
-    technical: ["Category", "Achievement"],
-    technical: ["Category", "Achievement"],
-    technical: ["Category", "Achievement"],
-    technical: ["Category", "Achievement"],
-    technical: ["Category", "Achievement"],
-
-
+    sports: ["Category", "EventLevel", "Role", "Outcome"],
+    clubs: ["Category", "Position"],
+    // job: ["JobType"],
+    publications: ["PublicationType"],
   };
 
   // Fetch dropdown options from the backend
@@ -85,9 +81,8 @@ const EditFields = () => {
   };
 
   return (
+    <PageTemplate title="Edit Fields">
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Edit Dropdown Fields</h2>
-
       <div className="flex gap-4 mb-4">
         <Select onValueChange={setCategory} value={category}>
           <SelectTrigger className="w-40">
@@ -96,6 +91,11 @@ const EditFields = () => {
           <SelectContent>
             <SelectItem value="technical">Technical</SelectItem>
             <SelectItem value="cultural">Cultural</SelectItem>
+            <SelectItem value="sports">Sports</SelectItem>
+            <SelectItem value="clubs">Clubs and Societies</SelectItem>
+            {/* <SelectItem value="job">Job Opportunities</SelectItem> */}
+            <SelectItem value="publications">Publications</SelectItem>
+
           </SelectContent>
         </Select>
 
@@ -139,6 +139,7 @@ const EditFields = () => {
         ))}
       </ul>
     </div>
+    </PageTemplate>
   );
 };
 

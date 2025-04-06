@@ -35,7 +35,8 @@ public class CulturalEventService {
         return culturalEventRepository.findByStudent_Id(studentId);
     }
 
-    public List<CulturalEvent> getByVerificationStatus(Boolean flag) {
-        return culturalEventRepository.findByFlag(flag);
+    @Transactional
+    public List<CulturalEvent> getPendingAndApprovedEventsByStudent(Student student) {
+        return culturalEventRepository.findPendingAndApprovedByStudent(student);
     }
 }

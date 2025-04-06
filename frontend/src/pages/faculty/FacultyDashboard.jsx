@@ -1,17 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import DashboardHeader from "@/components/student/StudentDashboardHeader";
+import PageTemplate from "@/components/student/StudentPageTemplate";
+import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
-const StatCard = ({ title, count, bgColor = "bg-gray-200", onClick }) => {
+const StatCard = ({ title, count, bgColor = "bg-gray-100", textColor = "text-gray-800", onClick }) => {
   return (
-    <div className={`${bgColor} rounded-md p-6 text-center`}>
-      <h3 className="text-gray-700 font-medium text-lg mb-3">{title}</h3>
-      <p className="text-4xl font-bold text-gray-800 mb-3">{count}</p>
+    <div 
+      className={`${bgColor} rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
+      onClick={onClick}
+    >
+      <h3 className={`${textColor} font-medium text-lg mb-3`}>{title}</h3>
+      <p className={`text-4xl font-bold ${textColor} mb-3`}>{count}</p>
       <button 
-        className="text-blue-500 hover:underline text-sm"
-        onClick={onClick}
+        className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
       >
-        VIEW
+        VIEW ALL
       </button>
     </div>
   );
@@ -19,61 +23,115 @@ const StatCard = ({ title, count, bgColor = "bg-gray-200", onClick }) => {
 
 const FacultyDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [counts, setCounts] = useState({
+    totalStudents: 0,
+    pendingRecords: 0
+  });
+  const [facultyName, setFacultyName] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  // Get faculty ID from localStorage
+  const userToken = JSON.parse(localStorage.getItem("user"));
+  const facultyId = userToken?.id;
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchCounts = async () => {
+      if (!facultyId) return;
+      
+      try {
+        setIsLoading(true);
+        
+        // Fetch total students count
+        const studentsResponse = await axios.get(
+          `http://localhost:8080/api/faculty/${facultyId}/students`
+        );
+        
+        // Fetch pending records count
+        const pendingResponse = await axios.get(
+          `http://localhost:8080/api/faculty/${facultyId}/pending-records`
+        );
+
+        // Fetch faculty details to get the name
+        const facultyResponse = await axios.get(
+          `http://localhost:8080/api/faculty/${facultyId}`
+        );
+
+        setCounts({
+          totalStudents: studentsResponse.data.length,
+          pendingRecords: pendingResponse.data.length
+        });
+        
+        setFacultyName(facultyResponse.data.name);
+      } catch (error) {
+        console.error("Error fetching counts:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCounts();
+  }, [facultyId, toast]);
 
   const handleViewStudentProfiles = () => {
-    navigate('/faculty/student-profiles');
+    navigate(`/faculty/${facultyId}/student-profiles`);
   };
 
-  const handleViewApprovedProfiles = () => {
-    navigate('/faculty/student-profiles', { state: { statusFilter: 'Approved' } });
+  const handleViewPendingRecords = () => {
+    navigate(`/faculty/${facultyId}/profile-verification`);
   };
 
-  const handleViewRejectedProfiles = () => {
-    navigate('/faculty/profile-verification', { state: { statusFilter: 'Rejected' } });
-  };
-
-  const handleViewPendingProfiles = () => {
-    navigate('/faculty/profile-verification', { state: { statusFilter: 'Pending' } });
-  };
+  if (!facultyId) {
+    return (
+      <PageTemplate title="Faculty Dashboard">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+          <p className="text-red-500">Faculty ID not found. Please log in again.</p>
+        </div>
+      </PageTemplate>
+    );
+  }
 
   return (
-    <div>
-      <DashboardHeader title="Faculty Dashboard" />
-      
+    <PageTemplate title="Faculty Dashboard">
       {isLoading ? (
         <div className="animate-pulse space-y-4">
           <div className="bg-gray-200 h-16 rounded-md"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gray-200 h-40 rounded-md"></div>
-            <div className="bg-gray-200 h-40 rounded-md"></div>
-            <div className="bg-gray-200 h-40 rounded-md"></div>
-            <div className="bg-gray-200 h-40 rounded-md"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gray-200 h-40 rounded-lg"></div>
+            <div className="bg-gray-200 h-40 rounded-lg"></div>
           </div>
         </div>
       ) : (
-        <div className="animate-slide-in" style={{ animationDelay: "150ms" }}>
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h2 className="text-xl font-medium text-gray-800 mb-2">NAME</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard title="Student Profiles" count={75} onClick={handleViewStudentProfiles} />
-              <StatCard title="Approved Profiles" count={40} onClick={handleViewApprovedProfiles} />
-              <StatCard title="Rejected Profiles" count={15} onClick={handleViewRejectedProfiles} />
-              <StatCard title="Pending Profiles" count={15} onClick={handleViewPendingProfiles} />
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              Welcome, {facultyName || "Faculty"}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StatCard 
+                title="Student Profiles" 
+                count={counts.totalStudents} 
+                bgColor="bg-blue-50"
+                textColor="text-blue-800"
+                onClick={handleViewStudentProfiles}
+              />
+              <StatCard 
+                title="Pending Records" 
+                count={counts.pendingRecords} 
+                bgColor="bg-blue-50"
+                textColor="text-blue-800"
+                onClick={handleViewPendingRecords}
+              />
             </div>
           </div>
         </div>
       )}
-    </div>
+    </PageTemplate>
   );
 };
 

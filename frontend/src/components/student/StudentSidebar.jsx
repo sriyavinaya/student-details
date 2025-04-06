@@ -49,7 +49,7 @@ const StudentSidebar = () => {
     { to: `/dashboard/${id}/cultural`, icon: <Users size={18} />, label: "Cultural", id: "cultural" },
     { to: `/dashboard/${id}/sports`, icon: <Award size={18} />, label: "Sports", id: "sports" },
     { to: `/dashboard/${id}/clubs`, icon: <BookOpen size={18} />, label: "Clubs and Societies", id: "clubs" },
-    { to: `/dashboard/${id}/internships`, icon: <Briefcase size={18} />, label: "Internships and Placements", id: "internships" },
+    { to: `/dashboard/${id}/job`, icon: <Briefcase size={18} />, label: "Job Opportunities", id: "job" },
     { to: `/dashboard/${id}/publications`, icon: <FileText size={18} />, label: "Publications", id: "publications" },
     { to: `/dashboard/${id}/history`, icon: <History size={18} />, label: "Record History", id: "history" },
     { to: `/dashboard/${id}/export`, icon: <FileDown size={18} />, label: "Export Records", id: "export" }
@@ -145,7 +145,7 @@ export default StudentSidebar;
 //     { to: "/dashboard/${id}/cultural", icon: <Users size={18} />, label: "Cultural", id: "cultural" },
 //     { to: "/dashboard/${id}/sports", icon: <Award size={18} />, label: "Sports", id: "sports" },
 //     { to: "/dashboard/${id}/clubs", icon: <BookOpen size={18} />, label: "Clubs and Societies", id: "clubs" },
-//     { to: "/dashboard/${id}/internships", icon: <Briefcase size={18} />, label: "Internships and Placements", id: "internships" },
+//     { to: "/dashboard/${id}/job", icon: <Briefcase size={18} />, label: "Internships and Placements", id: "job" },
 //     { to: "/dashboard/${id}/publications", icon: <FileText size={18} />, label: "Publications", id: "publications" },
 //     { to: "/dashboard/${id}/history", icon: <History size={18} />, label: "Record History", id: "history" },
 //     { to: "/dashboard/${id}/export", icon: <FileDown size={18} />, label: "Export Records", id: "export" }

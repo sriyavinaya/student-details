@@ -65,6 +65,12 @@ public class MainController {
         }
     }
 
+    @GetMapping("/approved")
+     public ResponseEntity<List<Main>> getAllApprovedRecords() {
+         List<Main> approvedRecords = mainService.getAllByVerificationStatus("Approved");
+         return ResponseEntity.ok(approvedRecords);
+     }
+
      // New endpoint to fetch all pending records
      @GetMapping("/pending")
      public ResponseEntity<List<Main>> getAllPendingRecords() {

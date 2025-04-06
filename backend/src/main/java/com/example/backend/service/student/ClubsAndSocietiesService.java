@@ -38,4 +38,9 @@ public class ClubsAndSocietiesService {
     public List<ClubsAndSocieties> getByVerificationStatus(Boolean flag) {
         return clubsAndSocietiesRepository.findByFlag(flag);
     }
+
+    @Transactional
+    public List<ClubsAndSocieties> getPendingAndApprovedEventsByStudent(Student student) {
+        return clubsAndSocietiesRepository.findPendingAndApprovedByStudent(student);
+    }
 }

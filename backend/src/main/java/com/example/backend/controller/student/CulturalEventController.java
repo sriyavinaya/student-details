@@ -109,13 +109,13 @@ public class CulturalEventController {
     }
 
     @GetMapping("/student/object/{studentId}")
-    public ResponseEntity<List<CulturalEvent>> getByStudentObject(@PathVariable Long studentId) {
+    public ResponseEntity<List<CulturalEvent>> getPendingAndApprovedEventsByStudent(@PathVariable Long studentId) {
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)
             .map(user -> (Student) user)
             .orElseThrow(() -> new IllegalArgumentException("Student not found"));
         
-        List<CulturalEvent> events = culturalEventService.getByStudent(student);
+        List<CulturalEvent> events = culturalEventService.getPendingAndApprovedEventsByStudent(student);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 }

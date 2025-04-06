@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import DashboardHeader from "@/components/student/StudentDashboardHeader";
+import PageTemplate from "@/components/student/StudentPageTemplate";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, X, Download, ArrowUpDown, RefreshCw } from "lucide-react";
+import { Search, X, Download, ArrowUpDown, RefreshCw, Filter, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComp } from "@/components/ui/calendar";
 
 const API_BASE_URL = "http://localhost:8080/api/faculty";
 const ITEMS_PER_PAGE = 10;
@@ -12,6 +15,7 @@ const ITEMS_PER_PAGE = 10;
 const ProfileVerification = () => {
   const { id } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [comment, setComment] = useState("");
@@ -21,8 +25,20 @@ const ProfileVerification = () => {
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
+  const [typeFilter, setTypeFilter] = useState("all");
   
   const { toast } = useToast();
+
+  // Record type options
+  const recordTypes = [
+    { value: "all", label: "All Types" },
+    { value: "TechnicalEvent", label: "Technical Events" },
+    { value: "SportsEvent", label: "Sports Events" },
+    { value: "CulturalEvent", label: "Cultural Events" },
+    { value: "ClubsAndSocieties", label: "Clubs & Societies" },
+    { value: "Publications", label: "Publications" },
+    { value: "JobOpportunity", label: "Job Opportunities" }
+  ];
 
   useEffect(() => {
     if (id) {
@@ -77,12 +93,22 @@ const ProfileVerification = () => {
     }
   };
 
-  // Filter profiles based on search term
-  const filteredProfiles = profiles.filter((profile) =>
-    profile.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    profile.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (profile.student?.rollNo && profile.student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter profiles based on search term, date, type and status
+  const filteredProfiles = profiles.filter((profile) => {
+    const matchesSearch = 
+      profile.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (profile.student?.rollNo && profile.student.rollNo.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesDate = !dateFilter || 
+      (profile.submissionDate && new Date(profile.submissionDate).toDateString() === dateFilter.toDateString());
+    
+    const matchesType = 
+      typeFilter === "all" || 
+      profile.dtype?.toLowerCase() === typeFilter.toLowerCase();
+    
+    return matchesSearch && matchesDate && matchesType ;
+  });
 
   // Sorting logic
   const sortedProfiles = [...filteredProfiles].sort((a, b) => {
@@ -112,9 +138,24 @@ const ProfileVerification = () => {
     }
   });
 
+  const formatDtype = (dtype) => {
+    if (!dtype) return "N/A";
+    
+    const typeMap = {
+      'TechnicalEvent': 'Technical Event',
+      'SportsEvent': 'Sports Event',
+      'CulturalEvent': 'Cultural Event',
+      'ClubsAndSocieties': 'Clubs & Societies',
+      'Publication': 'Publication',
+      'JobOpportunity': 'Job Opportunity'
+    };
+    
+    return typeMap[dtype] || dtype.replace(/([A-Z])/g, ' $1').trim();
+  };
+
   // Pagination logic
-  const totalPages = Math.max(1, Math.ceil(sortedProfiles.length / ITEMS_PER_PAGE));
-  const paginatedProfiles = sortedProfiles.slice(
+  const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / ITEMS_PER_PAGE));
+  const paginatedProfiles = filteredProfiles.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -141,18 +182,18 @@ const ProfileVerification = () => {
 
       setProfiles((prev) => prev.filter((profile) => profile.id !== selectedProfile.id));
       toast({ 
-        title: "Event Approved", 
-        description: `Event ${selectedProfile.id} approved successfully` 
+        title: "Record Approved", 
+        description: `Record approved successfully` 
       });
 
       setShowCommentModal(false);
       setApprovalComment("");
       setSelectedProfile(null);
     } catch (error) {
-      console.error("Error approving event:", error);
+      console.error("Error approving record:", error);
       toast({
         title: "Error",
-        description: "Failed to approve event",
+        description: "Failed to approve record",
         variant: "destructive",
       });
     }
@@ -177,8 +218,8 @@ const ProfileVerification = () => {
 
       setProfiles((prev) => prev.filter((profile) => profile.id !== selectedProfile.id));
       toast({ 
-        title: "Event Rejected", 
-        description: `Event ${selectedProfile.id} rejected` 
+        title: "Record Rejected", 
+        description: `Record rejected` 
       });
 
       setShowRejectCommentModal(false);
@@ -188,7 +229,7 @@ const ProfileVerification = () => {
       console.error("Error rejecting event:", error);
       toast({
         title: "Error",
-        description: "Failed to reject event",
+        description: "Failed to reject record",
         variant: "destructive",
       });
     }
@@ -218,22 +259,135 @@ const ProfileVerification = () => {
 
   return (
     <div className="relative">
-      <DashboardHeader title="Profile Verification" />
+      <PageTemplate title="Profile Verification">
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Search Input */}
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search by title, name or roll no..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
 
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <input
-              type="text"
-              placeholder="Search by title, name or roll no..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+            {/* Filters Section */}
+            <div className="flex gap-2 flex-wrap">
+              {/* Date Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="pl-3 pr-4"
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {dateFilter ? formatDate(dateFilter) : "Filter by date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <CalendarComp
+                    mode="single"
+                    selected={dateFilter}
+                    onSelect={setDateFilter}
+                    initialFocus
+                  />
+                  {dateFilter && (
+                    <div className="p-2 border-t">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDateFilter(null)}
+                        className="w-full"
+                      >
+                        Clear date
+                      </Button>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+
+              {/* Type Filter */}
+              <div className="relative">
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="appearance-none border rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+              >
+                {recordTypes.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-2 top-2.5 pointer-events-none">
+                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+              {/* Clear Filters Button */}
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => {
+                  setSearchTerm("");
+                  setDateFilter(null);
+                  setTypeFilter("all");
+                }}
+                className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                
+                // className="flex items-center gap-1"
+              >
+                <Filter className="h-5 w-5" />
+                Reset
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* Active Filters Display */}
+        {(searchTerm || dateFilter || typeFilter !== "all") && (
+          <div className="mb-4 flex flex-wrap gap-2 items-center">
+            <span className="text-sm text-gray-500">Active filters:</span>
+            {searchTerm && (
+              <span className="inline-flex items-center px-2 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                Search: {searchTerm}
+                <button 
+                  onClick={() => setSearchTerm("")}
+                  className="ml-1 p-0.5 rounded-full hover:bg-blue-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {dateFilter && (
+              <span className="inline-flex items-center px-2 py-1 text-sm font-medium text-purple-800 bg-purple-100">
+                Date: {formatDate(dateFilter)}
+                <button 
+                  onClick={() => setDateFilter(null)}
+                  className="ml-1 p-0.5 hover:bg-purple-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {typeFilter !== "all" && (
+              <span className="inline-flex items-center px-2 py-1 text-sm font-medium text-green-800 bg-green-100">
+                Type: {recordTypes.find(t => t.value === typeFilter)?.label}
+                <button 
+                  onClick={() => setTypeFilter("all")}
+                  className="ml-1 p-0.5 hover:bg-green-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+          </div>
+        )}
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <Table>
@@ -264,7 +418,7 @@ const ProfileVerification = () => {
                   <TableCell>{profile.student?.rollNo || 'N/A'}</TableCell>
                   <TableCell>{formatDate(profile.submissionDate)}</TableCell>
                   <TableCell>{profile.title}</TableCell>
-                  <TableCell>{profile.dtype || "N/A"}</TableCell>
+                  <TableCell>{formatDtype(profile.dtype) || "N/A"}</TableCell>
                   {/* <TableCell>
                     <span className={`text-sm font-semibold ${
                       profile.verificationStatus === 'Approved' ? 'text-green-600' :
@@ -306,28 +460,96 @@ const ProfileVerification = () => {
         </Table>
 
         {/* Pagination */}
-        <div className="flex justify-between items-center p-4">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="text-gray-600">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+                    {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
+                <div className="text-sm text-gray-600">
+                  Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredProfiles.length)}
+                  </span>{' '}
+                  of <span className="font-medium">{filteredProfiles.length}</span> results
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    First
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                    
+                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                      <span className="px-2">...</span>
+                    )}
+                    
+                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(totalPages)}
+                      >
+                        {totalPages}
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Last
+                  </Button>
+                </div>
+              </div>
+            )}
       </div>
 
-      {/* Record Details Modal - Using the RecordHistoryTable modal pattern */}
+      {/* Record Details Modal */}
       {selectedProfile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -366,7 +588,7 @@ const ProfileVerification = () => {
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">TYPE</h4>
-                  <p className="font-medium text-gray-900">{selectedProfile.dtype?.replace("Event", " Event") || "N/A"}</p>
+                  <p className="font-medium text-gray-900">{selectedProfile.dtype?.replace("Record", " Event") || "N/A"}</p>
                 </div>
                 <div>
                   <h4 className="text-sm font-medium text-gray-500">STATUS</h4>
@@ -440,7 +662,7 @@ const ProfileVerification = () => {
               {/* Document download section */}
               {selectedProfile.documentPath && (
                 <div className="p-4 rounded-lg border border-blue-50 bg-blue-50">
-                  <h4 className="text-sm font-medium text-blue-800 mb-2">PROOF DOCUMENT</h4>
+                  <h4 className="text-sm font-medium text-blue-800 mb-2">ATTACHED DOCUMENT</h4>
                   <button
                     onClick={() => handleDownload(selectedProfile.id)}
                     className="px-4 py-2 bg-white text-blue-600 rounded-md border border-blue-200 hover:bg-blue-100 flex items-center gap-2"
@@ -462,7 +684,7 @@ const ProfileVerification = () => {
                   </button>
                   <button
                     onClick={() => handleReject(selectedProfile.id)}
-                    className="px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded-md"
+                    className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md"
                   >
                     Reject
                   </button>
@@ -519,7 +741,7 @@ const ProfileVerification = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={submitComment}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+                className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md"
               >
                 Submit
               </button>
@@ -533,6 +755,7 @@ const ProfileVerification = () => {
           </div>
         </div>
       )}
+    </PageTemplate>
     </div>
   );
 };

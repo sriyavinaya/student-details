@@ -11,9 +11,7 @@ import com.example.backend.service.student.TechnicalEventService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,9 +129,9 @@ public class TechnicalEventController {
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
     
+    //Gets pending and approved events of a particular student
     @GetMapping("/student/object/{studentId}")
-    public ResponseEntity<List<TechnicalEvent>> getPendingAndApprovedEventsByStudent(
-        @PathVariable Long studentId) {
+    public ResponseEntity<List<TechnicalEvent>> getPendingAndApprovedEventsByStudent(@PathVariable Long studentId) {
         
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)

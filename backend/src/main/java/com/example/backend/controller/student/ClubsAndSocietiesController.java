@@ -108,13 +108,13 @@ public class ClubsAndSocietiesController {
     }
 
     @GetMapping("/student/object/{studentId}")
-    public ResponseEntity<List<ClubsAndSocieties>> getByStudentObject(@PathVariable Long studentId) {
+    public ResponseEntity<List<ClubsAndSocieties>> getPendingAndApprovedEventsByStudent(@PathVariable Long studentId) {
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)
             .map(user -> (Student) user)
             .orElseThrow(() -> new IllegalArgumentException("Student not found"));
         
-        List<ClubsAndSocieties> entries = clubsAndSocietiesService.getByStudent(student);
+        List<ClubsAndSocieties> entries = clubsAndSocietiesService.getPendingAndApprovedEventsByStudent(student);
         return new ResponseEntity<>(entries, HttpStatus.OK);
     }
 }

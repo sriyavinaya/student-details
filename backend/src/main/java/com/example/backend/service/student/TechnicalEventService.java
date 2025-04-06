@@ -4,12 +4,9 @@ import com.example.backend.model.Student;
 import com.example.backend.model.student.TechnicalEvent;
 import com.example.backend.repository.student.TechnicalEventRepository;
 
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -50,9 +47,6 @@ public class TechnicalEventService {
     public List<TechnicalEvent> getPendingAndApprovedEventsByStudent(Student student) {
         return technicalEventRepository.findPendingAndApprovedByStudent(student);
     }
-
-     
-
 
 }
 

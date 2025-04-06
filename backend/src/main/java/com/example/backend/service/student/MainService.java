@@ -1,7 +1,6 @@
 package com.example.backend.service.student;
 
 import com.example.backend.model.student.Main;
-import com.example.backend.model.student.TechnicalEvent;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.Faculty;
 import com.example.backend.model.Student;
@@ -184,6 +183,54 @@ public class MainService {
 
     public List<Main> getAllByStudentIdAndVerificationStatus(Long studentId, String status) {
         return mainRepository.findAllByStudentIdAndVerificationStatus(studentId, status);
+    }
+
+    // Flag related methods
+
+    @Transactional(readOnly = true)
+    public List<Main> getAllByFlag(Boolean flag) {
+        return mainRepository.findByFlag(flag);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Main> getAllByStudentIdAndFlag(Long studentId, Boolean flag) {
+        return mainRepository.findByStudentIdAndFlag(studentId, flag);
+    }
+
+    @Transactional
+    public void deleteRecord(Long id) {
+        // First get the record to find the associated file path
+        Main record = mainRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Record not found with id: " + id));
+
+        // Delete the associated file if it exists
+        if (record.getDocumentPath() != null && !record.getDocumentPath().isEmpty()) {
+            try {
+                Path filePath = Paths.get(UPLOAD_DIR).resolve(record.getDocumentPath()).normalize();
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                // Log the error but continue with record deletion
+                System.err.println("Failed to delete document file: " + e.getMessage());
+            }
+        }
+
+        // Delete the record from database
+        mainRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void updateFlag(Long id, Boolean flag) {
+        Main record = mainRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Record not found with id: " + id));
+
+        record.setFlag(flag);
+        mainRepository.save(record);
+    }
+
+    // Additional helper method to flag a record
+    @Transactional
+    public void flagRecord(Long id) {
+        updateFlag(id, true);
     }
 }
 

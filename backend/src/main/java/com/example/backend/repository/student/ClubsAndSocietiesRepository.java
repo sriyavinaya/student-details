@@ -21,4 +21,10 @@ public interface ClubsAndSocietiesRepository extends JpaRepository<ClubsAndSocie
     
     @Query("SELECT c FROM ClubsAndSocieties c WHERE c.student = :student AND c.flag = :flag")
     List<ClubsAndSocieties> findByStudentAndFlag(@Param("student") Student student, @Param("flag") Boolean flag);
+
+    //Find approved and pending events of a student
+    @Query("SELECT cs FROM ClubsAndSocieties cs " +
+          "WHERE cs.student = :student " +
+          "AND cs.verificationStatus IN ('Pending', 'Approved')")
+    List<ClubsAndSocieties> findPendingAndApprovedByStudent(@Param("student") Student student);
 }

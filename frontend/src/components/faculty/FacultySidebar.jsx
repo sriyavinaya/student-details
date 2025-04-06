@@ -7,7 +7,8 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  Flag
+  Flag,
+  BookOpenText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/UserContext";
@@ -46,6 +47,7 @@ const FacultySidebar = () => {
     { to: `/faculty/${id}`, icon: <Home size={18} />, label: "Dashboard", id: "dashboard" },
     { to: `/faculty/${id}/student-profiles`, icon: <Users size={18} />, label: "Student Profiles", id: "student-profiles" },
     { to: `/faculty/${id}/profile-verification`, icon: <FileCheck size={18} />, label: "Profile Verification", id: "profile-verification" },
+    { to: `/faculty/${id}/faculty-publications`, icon: <BookOpenText size={18} />, label: "Faculty Publications", id: "faculty-publications" },
     { to: `/faculty/${id}/flag-records`, icon: <Flag size={18} />, label: "Flag Records", id: "flag-reocrds" },
     { to: `/faculty/${id}/export-details`, icon: <Download size={18} />, label: "Export Details", id: "export-details" },
   ];

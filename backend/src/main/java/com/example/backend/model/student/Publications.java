@@ -16,12 +16,20 @@ import lombok.Setter;
 public class Publications extends Main {
 
     private String orcidId;
+
+    @Column(columnDefinition = "TEXT")
     private String author;
-    private int year;
-    private String collaborators;
+
+    private Integer year;  
+    // private String collaborators;
     private String doi;
+
+    @Column(columnDefinition = "TEXT")
     private String keywords;
+
+    @Column(columnDefinition = "TEXT")
     private String abstractContent;
+
     private String publicationType;
 
     public Publications() {
@@ -29,7 +37,7 @@ public class Publications extends Main {
     }
 
     public Publications(String title, String description, Student student, Faculty faculty,
-                        String orcidId, String author, int year, String collaborators, 
+                        String orcidId, String author, int year, 
                         String doi, String keywords, String abstractContent,
                         String documentPath, Boolean flag, String publicationType) {
         super();
@@ -40,7 +48,7 @@ public class Publications extends Main {
         this.orcidId = orcidId;
         this.author = author;
         this.year = year;
-        this.collaborators = collaborators;
+        // this.collaborators = collaborators;
         this.doi = doi;
         this.keywords = keywords;
         this.abstractContent = abstractContent;

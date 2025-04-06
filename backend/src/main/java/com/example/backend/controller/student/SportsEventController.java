@@ -47,7 +47,7 @@ public class SportsEventController {
             @RequestParam("eventDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate eventDate,
             @RequestParam("host") String host,
             @RequestParam("category") String category,
-            @RequestParam("achievement") String achievement,
+            // @RequestParam("achievement") String achievement,
             @RequestParam("eventLevel") String eventLevel,
             @RequestParam("role") String role,
             @RequestParam("outcome") String outcome,
@@ -78,7 +78,7 @@ public class SportsEventController {
             sportsEvent.setEventDate(eventDate);
             sportsEvent.setHost(host);
             sportsEvent.setCategory(category);
-            sportsEvent.setAchievement(achievement);
+            // sportsEvent.setAchievement(achievement);
             sportsEvent.setEventLevel(eventLevel);
             sportsEvent.setRole(role);
             sportsEvent.setOutcome(outcome);
@@ -115,13 +115,13 @@ public class SportsEventController {
     }
 
     @GetMapping("/student/object/{studentId}")
-    public ResponseEntity<List<SportsEvent>> getByStudentObject(@PathVariable Long studentId) {
+    public ResponseEntity<List<SportsEvent>> getPendingAndApprovedEventsByStudent(@PathVariable Long studentId) {
         Student student = userRepository.findById(studentId)
             .filter(user -> user instanceof Student)
             .map(user -> (Student) user)
             .orElseThrow(() -> new IllegalArgumentException("Student not found"));
         
-        List<SportsEvent> events = sportsEventService.getByStudent(student);
+        List<SportsEvent> events = sportsEventService.getPendingAndApprovedEventsByStudent(student);
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 }

@@ -135,47 +135,84 @@ public class MainService {
 
     @Transactional
     public String saveFile(MultipartFile file) throws IOException {
+        // Validate input file
+        if (file == null) {
+            throw new IllegalArgumentException("File cannot be null");
+        }
+        
+        if (file.isEmpty()) {
+            throw new IOException("File is empty");
+        }
+    
+        // Validate filename
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.trim().isEmpty()) {
+            throw new IllegalArgumentException("File name cannot be empty");
+        }
+    
+        // Create upload directory if it doesn't exist
         File directory = new File(UPLOAD_DIR);
         if (!directory.exists()) {
-            directory.mkdirs();
+            boolean dirsCreated = directory.mkdirs();
+            if (!dirsCreated) {
+                throw new IOException("Failed to create upload directory");
+            }
         }
-
+    
+        // Extract file extension
         String fileExtension = "";
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename != null && originalFilename.contains(".")) {
+        if (originalFilename.contains(".")) {
             fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
         }
-
+    
+        // Generate unique filename
         String fileName = UUID.randomUUID().toString() + fileExtension;
         Path filePath = Paths.get(UPLOAD_DIR, fileName);
-
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
+    
+        // Save the file
+        try {
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new IOException("Failed to save file: " + e.getMessage(), e);
+        }
+    
         return filePath.toAbsolutePath().toString();
     }
 
     @Transactional
-    public Resource downloadFile(Long eventId) throws MalformedURLException {
-        Optional<Main> eventOptional = mainRepository.findById(eventId);
-        if (eventOptional.isEmpty()) {
-            return null;
-        }
-
-        Main event = eventOptional.get();
-        String documentPath = event.getDocumentPath();
-        if (documentPath == null || documentPath.isEmpty()) {
-            return null;
-        }
-
-        Path filePath = Paths.get(UPLOAD_DIR).resolve(documentPath).normalize();
-        Resource resource = new UrlResource(filePath.toUri());
-
-        if (!resource.exists()) {
-            return null;
-        }
-
-        return resource;
+public Resource downloadFile(Long eventId) throws MalformedURLException, ResourceNotFoundException {
+    // Validate input
+    if (eventId == null) {
+        throw new IllegalArgumentException("Event ID cannot be null");
     }
+
+    // Find the event record
+    Main event = mainRepository.findById(eventId)
+        .orElseThrow(() -> new ResourceNotFoundException("Event not found with id: " + eventId));
+
+    // Check document path
+    String documentPath = event.getDocumentPath();
+    if (documentPath == null || documentPath.trim().isEmpty()) {
+        throw new ResourceNotFoundException("No document path found for event id: " + eventId);
+    }
+
+    // Resolve file path
+    Path filePath = Paths.get(UPLOAD_DIR).resolve(documentPath).normalize();
+    
+    // Verify the path is within the upload directory (security check)
+    if (!filePath.startsWith(Paths.get(UPLOAD_DIR).normalize())) {
+        throw new SecurityException("Attempted path traversal attack");
+    }
+
+    // Create resource
+    Resource resource = new UrlResource(filePath.toUri());
+    
+    if (!resource.exists()) {
+        throw new ResourceNotFoundException("File not found at path: " + filePath);
+    }
+
+    return resource;
+}
 
     public List<Main> getAllByVerificationStatus(String verificationStatus) {
         return mainRepository.findByVerificationStatus(verificationStatus);

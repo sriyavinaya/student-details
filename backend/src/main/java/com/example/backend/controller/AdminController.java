@@ -32,8 +32,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 @CrossOrigin(origins = "http://localhost:5173")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
+    @Autowired AdminService adminService;
 
     private final StudentService studentService;
     private final FacultyService facultyService;

@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.controller.faculty;
 
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.Faculty;
@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

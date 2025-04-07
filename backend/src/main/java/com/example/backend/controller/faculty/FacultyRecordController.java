@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.controller.faculty;
 
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.Faculty;

@@ -1,103 +1,104 @@
-// package com.example.backend.service;
+package com.example.backend.service;
 
-// import com.example.backend.model.Admin;
-// import com.example.backend.model.Faculty;
-// import com.example.backend.model.Student;
-// import com.example.backend.repository.AdminRepository;
-// import com.example.backend.repository.FacultyRepository;
-// import com.example.backend.repository.StudentRepository;
-// import jakarta.transaction.Transactional;
-// import org.apache.poi.ss.usermodel.*;
-// import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-// import org.springframework.stereotype.Service;
-// import org.springframework.web.multipart.MultipartFile;
-// import java.io.IOException;
-// import java.io.InputStream;
-// import java.util.ArrayList;
-// import java.util.List;
+import com.example.backend.model.Role;
+import com.example.backend.model.Faculty;
+import com.example.backend.model.Student;
+import com.example.backend.repository.AdminRepository;
+import com.example.backend.repository.FacultyRepository;
+import com.example.backend.repository.StudentRepository;
 
-// @Service
-// public class ImportService {
+import jakarta.transaction.Transactional;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-//     private final StudentRepository studentRepository;
-//     private final FacultyRepository facultyRepository;
-//     private final AdminRepository adminRepository;
-//     private final AuthenticationService authenticationService;
+@Service
+public class ImportService {
 
-//     public ImportService(StudentRepository studentRepository, FacultyRepository facultyRepository,
-//                         AdminRepository adminRepository, AuthenticationService authenticationService) {
-//         this.adminRepository = adminRepository;
-//         this.studentRepository = studentRepository;
-//         this.facultyRepository = facultyRepository;
-//         this.authenticationService = authenticationService;
-//     }
+    private final StudentRepository studentRepository;
+    private final FacultyRepository facultyRepository;
+    private final AdminRepository adminRepository;
+    private final AuthenticationService authenticationService;
 
-//     public String uploadStudentsExcel(MultipartFile file) {
-//         try (InputStream inputStream = file.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
-//             List<Student> students = parseStudentExcel(workbook);
-//             studentRepository.saveAll(students);
-//             return "Students uploaded successfully!";
-//         } catch (Exception e) {
-//             return "Error processing student file: " + e.getMessage();
-//         }
-//     }
+    public ImportService(StudentRepository studentRepository, FacultyRepository facultyRepository,
+                        AdminRepository adminRepository, AuthenticationService authenticationService) {
+        this.adminRepository = adminRepository;
+        this.studentRepository = studentRepository;
+        this.facultyRepository = facultyRepository;
+        this.authenticationService = authenticationService;
+    }
 
-//     @Transactional
-//     public void createStudentsFromExcel(MultipartFile file) throws IOException {
-//         try (InputStream inputStream = file.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
-//             Sheet sheet = workbook.getSheetAt(0);
-//             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-//                 Row row = sheet.getRow(i);
-//                 if (row == null) continue;
+    public String uploadStudentsExcel(MultipartFile file) {
+        try (InputStream inputStream = file.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
+            List<Student> students = parseStudentExcel(workbook);
+            studentRepository.saveAll(students);
+            return "Students uploaded successfully!";
+        } catch (Exception e) {
+            return "Error processing student file: " + e.getMessage();
+        }
+    }
 
-//                 Student student = new Student();
-//                 student.setName(getCellValueAsString(row.getCell(0)));
-//                 student.setEmail(getCellValueAsString(row.getCell(1)));
-//                 student.setRollNo(getCellValueAsString(row.getCell(2)));
-//                 student.setDateOfBirth(getCellValueAsDate(row.getCell(3)));
-//                 student.setDepartment(getCellValueAsString(row.getCell(4)));
-//                 student.setBatch(getCellValueAsInteger(row.getCell(5)));
-//                 student.setStudentClass(getCellValueAsString(row.getCell(6)));
-//                 student.setCgpa(getCellValueAsDouble(row.getCell(7)));
-//                 student.setGender(getCellValueAsString(row.getCell(8)));
-//                 student.setRole("student");
+    @Transactional
+    public void createStudentsFromExcel(MultipartFile file) throws IOException {
+        try (InputStream inputStream = file.getInputStream(); Workbook workbook = new XSSFWorkbook(inputStream)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
 
-//                 student.setFaEmail(getCellValueAsString(row.getCell(9)), facultyRepository);
-//                 authenticationService.registerStudent(student);
-//             }
-//         }
-//     }
+                Student student = new Student();
+                student.setName(getCellValueAsString(row.getCell(0)));
+                student.setEmail(getCellValueAsString(row.getCell(1)));
+                student.setRollNo(getCellValueAsString(row.getCell(2)));
+                student.setDateOfBirth(getCellValueAsDate(row.getCell(3)));
+                student.setDepartment(getCellValueAsString(row.getCell(4)));
+                student.setBatch(getCellValueAsInteger(row.getCell(5)));
+                student.setStudentClass(getCellValueAsString(row.getCell(6)));
+                student.setCgpa(getCellValueAsDouble(row.getCell(7)));
+                student.setGender(getCellValueAsString(row.getCell(8)));
+                student.setRole(Role.STUDENT);
 
-//     private List<Student> parseStudentExcel(Workbook workbook) {
-//         List<Student> students = new ArrayList<>();
-//         Sheet sheet = workbook.getSheetAt(0);
-//         for (Row row : sheet) {
-//             if (row.getRowNum() == 0) continue;
-//             Student student = new Student();
-//             student.setName(getCellValueAsString(row.getCell(0)));
-//             student.setEmail(getCellValueAsString(row.getCell(1)));
-//             students.add(student);
-//         }
-//         return students;
-//     }
+                student.setFaEmail(getCellValueAsString(row.getCell(9)), facultyRepository);
+                authenticationService.registerStudent(student);
+            }
+        }
+    }
 
-//     private String getCellValueAsString(Cell cell) {
-//         if (cell == null) return "";
-//         return cell.getCellType() == CellType.STRING ? cell.getStringCellValue().trim() : "";
-//     }
+    private List<Student> parseStudentExcel(Workbook workbook) {
+        List<Student> students = new ArrayList<>();
+        Sheet sheet = workbook.getSheetAt(0);
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            Student student = new Student();
+            student.setName(getCellValueAsString(row.getCell(0)));
+            student.setEmail(getCellValueAsString(row.getCell(1)));
+            students.add(student);
+        }
+        return students;
+    }
 
-//     private Integer getCellValueAsInteger(Cell cell) {
-//         if (cell == null) return null;
-//         return cell.getCellType() == CellType.NUMERIC ? (int) cell.getNumericCellValue() : null;
-//     }
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) return "";
+        return cell.getCellType() == CellType.STRING ? cell.getStringCellValue().trim() : "";
+    }
 
-//     private Double getCellValueAsDouble(Cell cell) {
-//         if (cell == null) return null;
-//         return cell.getCellType() == CellType.NUMERIC ? cell.getNumericCellValue() : null;
-//     }
+    private Integer getCellValueAsInteger(Cell cell) {
+        if (cell == null) return null;
+        return cell.getCellType() == CellType.NUMERIC ? (int) cell.getNumericCellValue() : null;
+    }
 
-//     private java.util.Date getCellValueAsDate(Cell cell) {
-//         if (cell == null) return null;
-//         return cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell) ? cell.getDateCellValue() : null;
-//     }
-// }
+    private Double getCellValueAsDouble(Cell cell) {
+        if (cell == null) return null;
+        return cell.getCellType() == CellType.NUMERIC ? cell.getNumericCellValue() : null;
+    }
+
+    private java.util.Date getCellValueAsDate(Cell cell) {
+        if (cell == null) return null;
+        return cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell) ? cell.getDateCellValue() : null;
+    }
+}

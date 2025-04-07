@@ -3,8 +3,9 @@ package com.example.backend.controller;
 import com.example.backend.model.Faculty;
 import com.example.backend.model.Student;
 import com.example.backend.service.AdminService;
-import com.example.backend.service.FacultyService;
 import com.example.backend.service.StudentService;
+import com.example.backend.service.faculty.FacultyService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import com.example.backend.service.faculty.FacultyService;
+
 
 @ExtendWith(MockitoExtension.class)
 class AdminControllerTest {

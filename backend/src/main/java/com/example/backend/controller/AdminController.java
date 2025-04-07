@@ -10,8 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.backend.model.Faculty;
 import com.example.backend.model.Student;
 import com.example.backend.service.AdminService;
-import com.example.backend.service.FacultyService;
 import com.example.backend.service.StudentService;
+import com.example.backend.service.faculty.FacultyService;
 
 import java.util.List;
 import java.util.Map;
@@ -43,14 +43,6 @@ public class AdminController {
         this.facultyService = facultyService;
 
     }
-
-        // @Operation(summary = "Upload an Excel file containing student data", 
-        //     description = "Uploads an Excel file and saves student data to the database.")
-        // @PostMapping(value = "/upload-students-data", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-        // public ResponseEntity<?> uploadStudentsData(@RequestParam("file") MultipartFile file) {
-        //     studentService.saveStudentsToDatabase(file);
-        //     return ResponseEntity.ok(Map.of("Message", "Students data uploaded and saved to database successfully"));
-        // }
 
         @GetMapping("/all-students")
         public ResponseEntity<List<Student>> getStudents() {
@@ -100,6 +92,13 @@ public class AdminController {
 
 
 
+        // @Operation(summary = "Upload an Excel file containing student data", 
+        //     description = "Uploads an Excel file and saves student data to the database.")
+        // @PostMapping(value = "/upload-students-data", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+        // public ResponseEntity<?> uploadStudentsData(@RequestParam("file") MultipartFile file) {
+        //     studentService.saveStudentsToDatabase(file);
+        //     return ResponseEntity.ok(Map.of("Message", "Students data uploaded and saved to database successfully"));
+        // }
 
 
 

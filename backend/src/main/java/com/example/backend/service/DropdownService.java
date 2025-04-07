@@ -27,11 +27,20 @@ public class DropdownService {
 
     // Delete a dropdown option by ID
     public void deleteDropdownOption(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID cannot be null");
+        }
         dropdownRepository.deleteById(id);
     }
 
     // Fetch dropdown options by category and dropdownName
     public List<DropdownModel> getDropdownOptions(String category, String dropdownName) {
+        if (category == null) {
+            throw new IllegalArgumentException("Category cannot be null");
+        }
+        if (dropdownName == null) {
+            throw new IllegalArgumentException("Dropdown name cannot be null");
+        }
         return dropdownRepository.findByCategoryAndDropdownName(category, dropdownName);
     }
 }

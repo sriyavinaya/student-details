@@ -1,4 +1,4 @@
-package com.example.backend.service;
+package com.example.backend.service.faculty;
 
 import com.example.backend.model.Faculty;
 import com.example.backend.model.Student;

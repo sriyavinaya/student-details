@@ -1,10 +1,12 @@
-package com.example.backend.service;
+package com.example.backend.service.faculty;
 
 import com.example.backend.model.Faculty;
 import com.example.backend.model.Student;
 import com.example.backend.repository.FacultyRepository;
 import com.example.backend.repository.StudentRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.service.faculty.FacultyService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

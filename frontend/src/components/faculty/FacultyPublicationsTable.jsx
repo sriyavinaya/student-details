@@ -1,20 +1,25 @@
 import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowUpDown, Download, X, Trash2 } from "lucide-react";
-import axios from "axios";
+import { ArrowUpDown, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 
 const ITEMS_PER_PAGE = 10;
 
-const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = false }) => {
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
+const FacultyPublicationsTable = ({ 
+  publications = [], 
+  showFacultyInfo = true,
+  isReadOnly = false,
+  isFaculty = false,
+  onDelete 
+}) => {
   const [sortField, setSortField] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPublication, setSelectedPublication] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
 
   const handleSortClick = (field) => {
     if (sortField === field) {
@@ -60,7 +65,6 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
       );
       
       if (response.data.success) {
-        // Call the onDelete prop to update the parent component's state
         onDelete(publicationId);
         toast({
           title: "Success",
@@ -108,6 +112,7 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
               { label: "Author(s)", field: "author" },
               { label: "Year", field: "year" },
               { label: "DOI", field: "doi" },
+              ...(showFacultyInfo ? [{ label: "Faculty", field: "faculty.name" }] : []),
             ].map(({ label, field }) => (
               <TableHead key={field} className="cursor-pointer" onClick={() => handleSortClick(field)}>
                 <div className="flex items-center gap-1">
@@ -138,6 +143,11 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
                     </a>
                   ) : "N/A"}
                 </TableCell>
+                {showFacultyInfo && (
+                  <TableCell>
+                    {publication.faculty?.name || "N/A"}
+                  </TableCell>
+                )}
                 <TableCell>
                   <div className="flex gap-2">
                     <button
@@ -146,20 +156,22 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
                     >
                       VIEW
                     </button>
-                    <button
-                      className="px-2 py-1 bg-red-100 font-medium text-red-600 rounded hover:bg-red-400 text-sm flex items-center"
-                      onClick={() => handleDelete(publication.id)}
-                      disabled={isDeleting}
-                    >
-                      DELETE
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        className="px-2 py-1 bg-red-100 font-medium text-red-600 rounded hover:bg-red-400 text-sm flex items-center"
+                        onClick={() => handleDelete(publication.id)}
+                        disabled={isDeleting}
+                      >
+                        DELETE
+                      </button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-4 text-gray-500">
+              <TableCell colSpan={showFacultyInfo ? 7 : 6} className="text-center py-4 text-gray-500">
                 No publications found
               </TableCell>
             </TableRow>
@@ -256,13 +268,16 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
         </div>
       )}
 
-      {/* Publication Details Modal (unchanged) */}
+      {/* Publication Details Modal */}
       {selectedPublication && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-medium text-gray-800">Publication Details</h3>
-              <button onClick={() => setSelectedPublication(null)} className="text-gray-500 hover:text-gray-700">
+              <button 
+                onClick={() => setSelectedPublication(null)} 
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -337,7 +352,7 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">DESCRIPTION</  h4>
+                  <h4 className="text-sm font-medium text-gray-500">DESCRIPTION</h4>
                   <p className="font-medium text-gray-900">
                     {selectedPublication.description || "N/A"}
                   </p>
@@ -345,7 +360,7 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
 
                 {!isFaculty && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">FACULTY COMMENTS</  h4>
+                    <h4 className="text-sm font-medium text-gray-500">FACULTY COMMENTS</h4>
                     <p className="font-medium text-gray-900">
                       {selectedPublication.comments || "No comments available"}
                     </p>
@@ -355,7 +370,7 @@ const FacultyPublicationsTable = ({ publications = [], onDelete, isFaculty = fal
 
               {selectedPublication.documentPath && (
                 <div className="p-4 rounded-lg border border-blue-50 bg-blue-50">
-                  <h4 className="text-sm font-medium text-blue-800 mb-2">FULL TEXT</  h4>
+                  <h4 className="text-sm font-medium text-blue-800 mb-2">FULL TEXT</h4>
                   <button
                     onClick={() => handleDownload(selectedPublication.id)}
                     className="px-4 py-2 bg-white text-blue-600 rounded-md border border-blue-200 hover:bg-blue-100 flex items-center gap-2"

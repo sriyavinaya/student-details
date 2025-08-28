@@ -49,7 +49,7 @@ const FacultySidebar = () => {
     { to: `/faculty/${id}/profile-verification`, icon: <FileCheck size={18} />, label: "Profile Verification", id: "profile-verification" },
     { to: `/faculty/${id}/faculty-publications`, icon: <BookOpenText size={18} />, label: "Faculty Publications", id: "faculty-publications" },
     { to: `/faculty/${id}/flag-records`, icon: <Flag size={18} />, label: "Flag Records", id: "flag-reocrds" },
-    { to: `/faculty/${id}/export-details`, icon: <Download size={18} />, label: "Export Details", id: "export-details" },
+    // { to: `/faculty/${id}/export-details`, icon: <Download size={18} />, label: "Export Details", id: "export-details" },
   ];
 
   return (

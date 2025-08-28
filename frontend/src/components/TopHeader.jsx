@@ -12,7 +12,7 @@ const TopHeader = () => {
   
   const { toast } = useToast();
   
-  const [notifications, setNotifications] = useState(0);
+  // const [notifications, setNotifications] = useState(0);
 
 
   const handleLogout = async () => {
@@ -44,13 +44,13 @@ const TopHeader = () => {
     }
   };
 
-  const handleNotification = () => {
-    setNotifications(0);
-    toast({
-      title: "Notifications cleared",
-      description: "You have no new notifications",
-    });
-  };
+  // const handleNotification = () => {
+  //   setNotifications(0);
+  //   toast({
+  //     title: "Notifications cleared",
+  //     description: "You have no new notifications",
+  //   });
+  // };
 
   return (
     <div className="flex justify-between items-center p-4 bg-gray-200 w-full shadow-sm">
@@ -59,7 +59,7 @@ const TopHeader = () => {
       </div>
 
       <div className="flex items-center space-x-4">
-        <button
+        {/* <button
           onClick={handleNotification}
           className="relative p-2 rounded-full hover:bg-white/60 transition-all"
           aria-label="Notifications"
@@ -70,7 +70,7 @@ const TopHeader = () => {
               {notifications}
             </span>
           )}
-        </button>
+        </button> */}
 
         <button
           onClick={handleLogout}

@@ -46,8 +46,8 @@ const AdminSidebar = () => {
     { to: `/admin/${id}/faculty-profiles`, icon: <User size={18} />, label: "Faculty Profiles", id: "faculty-profiles" },
     { to: `/admin/${id}/flagged-records`, icon: <Flag size={18} />, label: "Flagged Records", id: "flagged-records" },
     { to: `/admin/${id}/edit-fields`, icon: <Edit size={18} />, label: "Edit Fields", id: "edit-fields" },
-    { to: `/admin/${id}/import-details`, icon: <FileInput size={18} />, label: "Import Details", id: "import-details" },
-    { to: `/admin/${id}/export-details`, icon: <FileDown size={18} />, label: "Export Details", id: "export-details" },
+    // { to: `/admin/${id}/import-details`, icon: <FileInput size={18} />, label: "Import Details", id: "import-details" },
+    // { to: `/admin/${id}/export-details`, icon: <FileDown size={18} />, label: "Export Details", id: "export-details" },
   ];
 
   return (

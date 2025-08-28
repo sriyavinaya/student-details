@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowUpDown, Eye, Download, X } from "lucide-react";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
+
 
 const ITEMS_PER_PAGE = 10;
 
@@ -147,9 +149,9 @@ const TechnicalEventsTable = ({ events = [] }) => {  // Added default empty arra
                 <div className="text-sm text-gray-600">
                   Showing <span className="font-medium">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to{' '}
                   <span className="font-medium">
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filteredRecords.length)}
+                    {Math.min(currentPage * ITEMS_PER_PAGE, sortedEvents.length)}
                   </span>{' '}
-                  of <span className="font-medium">{filteredRecords.length}</span> results
+                  of <span className="font-medium">{sortedEvents.length}</span> results
                 </div>
                 
                 <div className="flex items-center gap-2">

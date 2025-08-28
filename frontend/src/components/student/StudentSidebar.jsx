@@ -51,8 +51,8 @@ const StudentSidebar = () => {
     { to: `/dashboard/${id}/clubs`, icon: <BookOpen size={18} />, label: "Clubs and Societies", id: "clubs" },
     { to: `/dashboard/${id}/job`, icon: <Briefcase size={18} />, label: "Job Opportunities", id: "job" },
     { to: `/dashboard/${id}/publications`, icon: <FileText size={18} />, label: "Publications", id: "publications" },
-    { to: `/dashboard/${id}/history`, icon: <History size={18} />, label: "Record History", id: "history" },
-    { to: `/dashboard/${id}/export`, icon: <FileDown size={18} />, label: "Export Records", id: "export" }
+    // { to: `/dashboard/${id}/history`, icon: <History size={18} />, label: "Record History", id: "history" },
+    // { to: `/dashboard/${id}/export`, icon: <FileDown size={18} />, label: "Export Records", id: "export" }
   ];
 
   return (
